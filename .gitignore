@@ -24,5 +24,23 @@ htmlcov/
 *.log
 *.pem
 *.key
+
+# Python packaging output
+*.egg-info/
+/build/
+/dist/
+*.pyo
+
+# Browser test and coverage reports
+playwright-report/
+blob-report/
+coverage/
+coverage.xml
+
+# Editor temporary files
+*.swp
+*.swo
+*~
+
 # Keep project documentation even when a global ignore excludes README.md.
 !README.md
