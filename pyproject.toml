@@ -1,0 +1,74 @@
+[project]
+name = "claude-workspace-mvp"
+version = "0.1.0"
+description = "Single-user workspace chat service powered by Claude Agent SDK"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+  "ag-ui-protocol==0.1.19",
+  "aiofiles>=24.1.0",
+  "aiosqlite>=0.21.0",
+  "alembic>=1.16.0,<2",
+  "asyncpg>=0.30.0,<1",
+  "claude-agent-sdk>=0.2.128,<0.3",
+  "fastapi>=0.116.0",
+  "httpx>=0.28.1",
+  "jinja2>=3.1.6",
+  "mcp>=1.29.0,<2",
+  # Layout is a built-in Host endpoint; a normal deployment must install its solver.
+  "ortools==9.11.4210",
+  "numpy<2.3",
+  "pandas<2.3",
+  "opensandbox==0.1.15",
+  "packaging>=24.2,<26",
+  "pydantic-settings>=2.10.0",
+  "pymysql>=1.1.1,<2",
+  "pyjwt[crypto]>=2.10,<3",
+  "python-dotenv>=1.1.0,<2",
+  "python-multipart>=0.0.20",
+  "pyyaml>=6.0.2",
+  "rectpack==0.2.2",
+  "sqlalchemy[asyncio]>=2.0.41",
+  "uvicorn[standard]>=0.35.0",
+]
+
+[project.scripts]
+workspace-agent = "app.cli:main"
+
+[dependency-groups]
+dev = [
+  "hypothesis>=6.100,<7",
+  "playwright>=1.52.0",
+  "pytest>=8.4.1",
+  "pytest-asyncio>=1.0.0",
+  "ruff>=0.16.0,<0.17",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["app"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[tool.uv]
+# Keep CPython 3.12 wheels compatible with CentOS 7 (glibc 2.17).
+# asyncpg 0.31 requires glibc 2.28; newer greenlet wheels require >= 2.24.
+constraint-dependencies = ["asyncpg==0.30.0", "greenlet==3.2.4"]
+
+[tool.uv.sources]
+rectpack = { index = "layout-pypi" }
+
+[[tool.uv.index]]
+name = "layout-pypi"
+url = "https://pypi.org/simple"
+explicit = true
+
+[[tool.uv.index]]
+name = "tuna"
+url = "https://pypi.tuna.tsinghua.edu.cn/simple"
+default = true

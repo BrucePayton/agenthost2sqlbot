@@ -1,0 +1,3240 @@
+{
+  "provenance": {
+    "generator": "tests/live/export_davinci_feedback_fixture.py",
+    "validatedWithProductionPydantic": true,
+    "sourceSha256": {
+      "contracts/catalog.py": "b442d3bc336b5ff247c0ba56303f6d0fb73f289b361f789bca4650fc46aaf2d9",
+      "contracts/refs.py": "fe6e3bcf037bf6518dfa1473c08de5e7f00c4226d4c4575ecf9320077c25c864",
+      "contracts/resolution.py": "235465772c5c512963d5a48ab90d341eadc917f4632aac9aeb3599b517b55d51",
+      "mcp/catalog_tools.py": "6048bf5e9ff76cdf8ffd16977b4e810a9b5c073e9de6e52b50af03ea263ba9d5",
+      "mcp/resolution_tools.py": "119fec5fe5b51e3dee3f116e63ed796964c626dc4638de63642401f0ec0526e9",
+      "services/catalog.py": "8264b222c8c84d7e55c0474c893cd144f1bbbb37f646a39e5e13d0f507ecf1d5"
+    }
+  },
+  "tools": {
+    "catalog.get_dataset_schema": {
+      "name": "catalog.get_dataset_schema",
+      "description": "Read one Davinci dataset's metadata, requiredFilters, grainFieldRefs and at most `limit` (default 50) authorized fields. Narrow with `fieldRefs` (exact fields) or `query`/`roles` (ranked); with neither, structural fields (required filters, grain, time) come first. Check `fieldCount`/`truncated`. For ranked field discovery across datasets use catalog.search_fields. Reuse canonical refs from tool output: datasetRef='warehouseTopic:10', fieldRefs=['warehouseTopic:10/12285']; bare numeric IDs are invalid.",
+      "inputSchema": {
+        "$defs": {
+          "DatasetRef": {
+            "description": "Opaque, typed reference to one Davinci dataset.",
+            "examples": [
+              "warehouseTopic:10"
+            ],
+            "title": "DatasetRef",
+            "type": "string",
+            "pattern": "^(?:[A-Za-z][A-Za-z0-9_-]{0,63}):(?:[^/\\s]{1,256})$"
+          },
+          "FieldRef": {
+            "description": "Opaque field reference scoped by its authoritative dataset.",
+            "examples": [
+              "warehouseTopic:10/12285"
+            ],
+            "title": "FieldRef",
+            "type": "string",
+            "pattern": "^(?:[^/\\s]+:[^/\\s]+)/(?:[^/\\s]{1,256})$"
+          }
+        },
+        "additionalProperties": false,
+        "description": "One bounded schema read. Priority: fieldRefs (exact) > query/roles (ranked) > default.",
+        "properties": {
+          "datasetRef": {
+            "$ref": "#/$defs/DatasetRef"
+          },
+          "fieldRefs": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/$defs/FieldRef"
+                },
+                "maxItems": 50,
+                "title": "Fieldrefs",
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "query": {
+            "anyOf": [
+              {
+                "maxLength": 128,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Query"
+          },
+          "roles": {
+            "anyOf": [
+              {
+                "items": {
+                  "enum": [
+                    "metric",
+                    "dimension",
+                    "time",
+                    "filter",
+                    "unknown"
+                  ],
+                  "type": "string"
+                },
+                "title": "Roles",
+                "type": "array",
+                "uniqueItems": true
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "limit": {
+            "default": 50,
+            "maximum": 200,
+            "minimum": 1,
+            "title": "Limit",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "datasetRef"
+        ],
+        "title": "DatasetSchemaRequest",
+        "type": "object"
+      },
+      "outputSchema": {
+        "$defs": {
+          "DatasetCandidate": {
+            "additionalProperties": false,
+            "properties": {
+              "datasetRef": {
+                "$ref": "#/$defs/DatasetRef"
+              },
+              "name": {
+                "maxLength": 256,
+                "minLength": 1,
+                "title": "Name",
+                "type": "string"
+              },
+              "description": {
+                "anyOf": [
+                  {
+                    "maxLength": 2048,
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Description"
+              },
+              "businessDomains": {
+                "items": {
+                  "type": "string"
+                },
+                "title": "Businessdomains",
+                "type": "array"
+              },
+              "datasetType": {
+                "maxLength": 64,
+                "minLength": 1,
+                "title": "Datasettype",
+                "type": "string"
+              },
+              "permission": {
+                "$ref": "#/$defs/PermissionState"
+              },
+              "matchedFields": {
+                "items": {
+                  "$ref": "#/$defs/FieldSummary"
+                },
+                "title": "Matchedfields",
+                "type": "array"
+              },
+              "evidence": {
+                "items": {
+                  "$ref": "#/$defs/Evidence"
+                },
+                "title": "Evidence",
+                "type": "array"
+              },
+              "scores": {
+                "$ref": "#/$defs/ScoreBreakdown"
+              },
+              "dataUpdateTime": {
+                "anyOf": [
+                  {
+                    "maxLength": 64,
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Dataupdatetime"
+              },
+              "applicationCount": {
+                "anyOf": [
+                  {
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Applicationcount"
+              }
+            },
+            "required": [
+              "datasetRef",
+              "name",
+              "datasetType",
+              "permission",
+              "scores"
+            ],
+            "title": "DatasetCandidate",
+            "type": "object"
+          },
+          "DatasetRef": {
+            "description": "Opaque, typed reference to one Davinci dataset.",
+            "examples": [
+              "warehouseTopic:10"
+            ],
+            "title": "DatasetRef",
+            "type": "string",
+            "pattern": "^(?:[A-Za-z][A-Za-z0-9_-]{0,63}):(?:[^/\\s]{1,256})$"
+          },
+          "Evidence": {
+            "additionalProperties": false,
+            "properties": {
+              "kind": {
+                "maxLength": 64,
+                "minLength": 1,
+                "title": "Kind",
+                "type": "string"
+              },
+              "resourceRef": {
+                "maxLength": 512,
+                "minLength": 1,
+                "title": "Resourceref",
+                "type": "string"
+              },
+              "text": {
+                "maxLength": 512,
+                "minLength": 1,
+                "title": "Text",
+                "type": "string"
+              },
+              "source": {
+                "enum": [
+                  "davinci_catalog",
+                  "davinci_permission",
+                  "davinci_metadata"
+                ],
+                "title": "Source",
+                "type": "string"
+              }
+            },
+            "required": [
+              "kind",
+              "resourceRef",
+              "text",
+              "source"
+            ],
+            "title": "Evidence",
+            "type": "object"
+          },
+          "FieldRef": {
+            "description": "Opaque field reference scoped by its authoritative dataset.",
+            "examples": [
+              "warehouseTopic:10/12285"
+            ],
+            "title": "FieldRef",
+            "type": "string",
+            "pattern": "^(?:[^/\\s]+:[^/\\s]+)/(?:[^/\\s]{1,256})$"
+          },
+          "FieldSummary": {
+            "additionalProperties": false,
+            "properties": {
+              "fieldRef": {
+                "$ref": "#/$defs/FieldRef"
+              },
+              "name": {
+                "maxLength": 256,
+                "minLength": 1,
+                "title": "Name",
+                "type": "string"
+              },
+              "description": {
+                "anyOf": [
+                  {
+                    "maxLength": 1024,
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Description"
+              },
+              "roles": {
+                "items": {
+                  "enum": [
+                    "metric",
+                    "dimension",
+                    "time",
+                    "filter",
+                    "unknown"
+                  ],
+                  "type": "string"
+                },
+                "title": "Roles",
+                "type": "array",
+                "uniqueItems": true
+              },
+              "dataType": {
+                "anyOf": [
+                  {
+                    "maxLength": 128,
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Datatype"
+              },
+              "required": {
+                "default": false,
+                "title": "Required",
+                "type": "boolean"
+              },
+              "requiredCondition": {
+                "default": false,
+                "title": "Requiredcondition",
+                "type": "boolean"
+              },
+              "group": {
+                "anyOf": [
+                  {
+                    "maxLength": 256,
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Group"
+              },
+              "sourceRef": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/DatasetRef"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "dimensionIds": {
+                "items": {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "maxItems": 20,
+                "title": "Dimensionids",
+                "type": "array"
+              },
+              "fieldRelation": {
+                "anyOf": [
+                  {
+                    "maxLength": 64,
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Fieldrelation"
+              }
+            },
+            "required": [
+              "fieldRef",
+              "name",
+              "roles"
+            ],
+            "title": "FieldSummary",
+            "type": "object"
+          },
+          "PermissionState": {
+            "enum": [
+              "authorized",
+              "discoverable_but_unauthorized",
+              "hidden"
+            ],
+            "title": "PermissionState",
+            "type": "string"
+          },
+          "RelationSummary": {
+            "additionalProperties": false,
+            "properties": {
+              "relatedDatasetRefs": {
+                "items": {
+                  "$ref": "#/$defs/DatasetRef"
+                },
+                "title": "Relateddatasetrefs",
+                "type": "array"
+              },
+              "publicDimensionFieldRefs": {
+                "items": {
+                  "$ref": "#/$defs/FieldRef"
+                },
+                "title": "Publicdimensionfieldrefs",
+                "type": "array"
+              },
+              "cardinalities": {
+                "items": {
+                  "type": "string"
+                },
+                "title": "Cardinalities",
+                "type": "array"
+              },
+              "issues": {
+                "items": {
+                  "type": "string"
+                },
+                "title": "Issues",
+                "type": "array"
+              }
+            },
+            "title": "RelationSummary",
+            "type": "object"
+          },
+          "RequiredFilter": {
+            "additionalProperties": false,
+            "properties": {
+              "fieldRef": {
+                "$ref": "#/$defs/FieldRef"
+              },
+              "name": {
+                "maxLength": 256,
+                "minLength": 1,
+                "title": "Name",
+                "type": "string"
+              },
+              "description": {
+                "anyOf": [
+                  {
+                    "maxLength": 1024,
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Description"
+              },
+              "required": {
+                "default": true,
+                "title": "Required",
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "fieldRef",
+              "name"
+            ],
+            "title": "RequiredFilter",
+            "type": "object"
+          },
+          "ResultStatus": {
+            "enum": [
+              "ok",
+              "partial",
+              "need_clarification",
+              "not_found",
+              "rejected"
+            ],
+            "title": "ResultStatus",
+            "type": "string"
+          },
+          "ScoreBreakdown": {
+            "additionalProperties": false,
+            "properties": {
+              "keyword": {
+                "maximum": 1,
+                "minimum": 0,
+                "title": "Keyword",
+                "type": "number"
+              },
+              "semantic": {
+                "anyOf": [
+                  {
+                    "maximum": 1,
+                    "minimum": 0,
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Semantic"
+              },
+              "recipe": {
+                "anyOf": [
+                  {
+                    "maximum": 1,
+                    "minimum": 0,
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Recipe"
+              },
+              "final": {
+                "maximum": 1,
+                "minimum": 0,
+                "title": "Final",
+                "type": "number"
+              }
+            },
+            "required": [
+              "keyword",
+              "final"
+            ],
+            "title": "ScoreBreakdown",
+            "type": "object"
+          }
+        },
+        "additionalProperties": false,
+        "properties": {
+          "status": {
+            "$ref": "#/$defs/ResultStatus"
+          },
+          "dataset": {
+            "$ref": "#/$defs/DatasetCandidate"
+          },
+          "fields": {
+            "items": {
+              "$ref": "#/$defs/FieldSummary"
+            },
+            "title": "Fields",
+            "type": "array"
+          },
+          "requiredFilters": {
+            "items": {
+              "$ref": "#/$defs/RequiredFilter"
+            },
+            "title": "Requiredfilters",
+            "type": "array"
+          },
+          "grainFieldRefs": {
+            "items": {
+              "$ref": "#/$defs/FieldRef"
+            },
+            "title": "Grainfieldrefs",
+            "type": "array"
+          },
+          "sourceRefs": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Sourcerefs",
+            "type": "array"
+          },
+          "relationSummary": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/RelationSummary"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "metadataVersion": {
+            "maxLength": 256,
+            "minLength": 1,
+            "title": "Metadataversion",
+            "type": "string"
+          },
+          "issues": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Issues",
+            "type": "array"
+          },
+          "fieldCount": {
+            "anyOf": [
+              {
+                "minimum": 0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Fieldcount"
+          },
+          "truncated": {
+            "default": false,
+            "title": "Truncated",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "status",
+          "dataset",
+          "fields",
+          "requiredFilters",
+          "sourceRefs",
+          "relationSummary",
+          "metadataVersion"
+        ],
+        "title": "DatasetSchemaResult",
+        "type": "object"
+      }
+    },
+    "catalog.search_datasets": {
+      "name": "catalog.search_datasets",
+      "description": "For an unbound metric choice, start with limit=3,maxMatchedFields=3. Once matchedFields definitions distinguish the choices, present dataset, metric and real definition options and wait for the user; do not inspect unrelated Widgets or prepare containers to infer their choice. Missing returned field definitions are supplemented internally from at most two authorized dataset schemas, concurrently, without expanding the field list. FIELD_DEFINITIONS_NOT_RETURNED means some definitions remain unavailable; check LOOKUP_FAILED/LOOKUP_LIMIT_REACHED issues and explain that limit, not that the source has no definition. Do not repeat these schema reads. If no relevant fields were found, supplement once with search_fields within at most two found datasets. Discovery-only requests should list the findings without forcing a choice. Find Davinci datasets using explainable catalog evidence and live access checks. Returns the top `limit` (default 5) ranked candidates from a bounded recall pool, not a complete inventory. Follow nextCursor with unchanged search arguments to traverse pages. coverage describes only this keyword search; check issues for partial failure or bounded multi-term fallback, never claim a global inventory. matchedFields retain the field definitions.",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "query": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Query",
+            "type": "string"
+          },
+          "scope": {
+            "default": "authorized",
+            "enum": [
+              "authorized",
+              "all"
+            ],
+            "title": "Scope",
+            "type": "string"
+          },
+          "datasetTypes": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "title": "Datasettypes",
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "businessDomains": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "title": "Businessdomains",
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "limit": {
+            "default": 5,
+            "maximum": 50,
+            "minimum": 1,
+            "title": "Limit",
+            "type": "integer"
+          },
+          "maxMatchedFields": {
+            "anyOf": [
+              {
+                "maximum": 50,
+                "minimum": 0,
+                "title": "Maxmatchedfields",
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "cursor": {
+            "anyOf": [
+              {
+                "maxLength": 1024,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Cursor"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "title": "DatasetSearchRequest",
+        "type": "object"
+      },
+      "outputSchema": {
+        "$defs": {
+          "DatasetCandidate": {
+            "additionalProperties": false,
+            "properties": {
+              "datasetRef": {
+                "$ref": "#/$defs/DatasetRef"
+              },
+              "name": {
+                "maxLength": 256,
+                "minLength": 1,
+                "title": "Name",
+                "type": "string"
+              },
+              "description": {
+                "anyOf": [
+                  {
+                    "maxLength": 2048,
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Description"
+              },
+              "businessDomains": {
+                "items": {
+                  "type": "string"
+                },
+                "title": "Businessdomains",
+                "type": "array"
+              },
+              "datasetType": {
+                "maxLength": 64,
+                "minLength": 1,
+                "title": "Datasettype",
+                "type": "string"
+              },
+              "permission": {
+                "$ref": "#/$defs/PermissionState"
+              },
+              "matchedFields": {
+                "items": {
+                  "$ref": "#/$defs/FieldSummary"
+                },
+                "title": "Matchedfields",
+                "type": "array"
+              },
+              "evidence": {
+                "items": {
+                  "$ref": "#/$defs/Evidence"
+                },
+                "title": "Evidence",
+                "type": "array"
+              },
+              "scores": {
+                "$ref": "#/$defs/ScoreBreakdown"
+              },
+              "dataUpdateTime": {
+                "anyOf": [
+                  {
+                    "maxLength": 64,
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Dataupdatetime"
+              },
+              "applicationCount": {
+                "anyOf": [
+                  {
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Applicationcount"
+              }
+            },
+            "required": [
+              "datasetRef",
+              "name",
+              "datasetType",
+              "permission",
+              "scores"
+            ],
+            "title": "DatasetCandidate",
+            "type": "object"
+          },
+          "DatasetRef": {
+            "description": "Opaque, typed reference to one Davinci dataset.",
+            "examples": [
+              "warehouseTopic:10"
+            ],
+            "title": "DatasetRef",
+            "type": "string",
+            "pattern": "^(?:[A-Za-z][A-Za-z0-9_-]{0,63}):(?:[^/\\s]{1,256})$"
+          },
+          "Evidence": {
+            "additionalProperties": false,
+            "properties": {
+              "kind": {
+                "maxLength": 64,
+                "minLength": 1,
+                "title": "Kind",
+                "type": "string"
+              },
+              "resourceRef": {
+                "maxLength": 512,
+                "minLength": 1,
+                "title": "Resourceref",
+                "type": "string"
+              },
+              "text": {
+                "maxLength": 512,
+                "minLength": 1,
+                "title": "Text",
+                "type": "string"
+              },
+              "source": {
+                "enum": [
+                  "davinci_catalog",
+                  "davinci_permission",
+                  "davinci_metadata"
+                ],
+                "title": "Source",
+                "type": "string"
+              }
+            },
+            "required": [
+              "kind",
+              "resourceRef",
+              "text",
+              "source"
+            ],
+            "title": "Evidence",
+            "type": "object"
+          },
+          "FieldRef": {
+            "description": "Opaque field reference scoped by its authoritative dataset.",
+            "examples": [
+              "warehouseTopic:10/12285"
+            ],
+            "title": "FieldRef",
+            "type": "string",
+            "pattern": "^(?:[^/\\s]+:[^/\\s]+)/(?:[^/\\s]{1,256})$"
+          },
+          "FieldSummary": {
+            "additionalProperties": false,
+            "properties": {
+              "fieldRef": {
+                "$ref": "#/$defs/FieldRef"
+              },
+              "name": {
+                "maxLength": 256,
+                "minLength": 1,
+                "title": "Name",
+                "type": "string"
+              },
+              "description": {
+                "anyOf": [
+                  {
+                    "maxLength": 1024,
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Description"
+              },
+              "roles": {
+                "items": {
+                  "enum": [
+                    "metric",
+                    "dimension",
+                    "time",
+                    "filter",
+                    "unknown"
+                  ],
+                  "type": "string"
+                },
+                "title": "Roles",
+                "type": "array",
+                "uniqueItems": true
+              },
+              "dataType": {
+                "anyOf": [
+                  {
+                    "maxLength": 128,
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Datatype"
+              },
+              "required": {
+                "default": false,
+                "title": "Required",
+                "type": "boolean"
+              },
+              "requiredCondition": {
+                "default": false,
+                "title": "Requiredcondition",
+                "type": "boolean"
+              },
+              "group": {
+                "anyOf": [
+                  {
+                    "maxLength": 256,
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Group"
+              },
+              "sourceRef": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/DatasetRef"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "dimensionIds": {
+                "items": {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "maxItems": 20,
+                "title": "Dimensionids",
+                "type": "array"
+              },
+              "fieldRelation": {
+                "anyOf": [
+                  {
+                    "maxLength": 64,
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Fieldrelation"
+              }
+            },
+            "required": [
+              "fieldRef",
+              "name",
+              "roles"
+            ],
+            "title": "FieldSummary",
+            "type": "object"
+          },
+          "PermissionState": {
+            "enum": [
+              "authorized",
+              "discoverable_but_unauthorized",
+              "hidden"
+            ],
+            "title": "PermissionState",
+            "type": "string"
+          },
+          "ResultStatus": {
+            "enum": [
+              "ok",
+              "partial",
+              "need_clarification",
+              "not_found",
+              "rejected"
+            ],
+            "title": "ResultStatus",
+            "type": "string"
+          },
+          "ScoreBreakdown": {
+            "additionalProperties": false,
+            "properties": {
+              "keyword": {
+                "maximum": 1,
+                "minimum": 0,
+                "title": "Keyword",
+                "type": "number"
+              },
+              "semantic": {
+                "anyOf": [
+                  {
+                    "maximum": 1,
+                    "minimum": 0,
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Semantic"
+              },
+              "recipe": {
+                "anyOf": [
+                  {
+                    "maximum": 1,
+                    "minimum": 0,
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Recipe"
+              },
+              "final": {
+                "maximum": 1,
+                "minimum": 0,
+                "title": "Final",
+                "type": "number"
+              }
+            },
+            "required": [
+              "keyword",
+              "final"
+            ],
+            "title": "ScoreBreakdown",
+            "type": "object"
+          },
+          "SearchCoverage": {
+            "additionalProperties": false,
+            "description": "Coverage of this keyword search page, never a claim about all Davinci resources.",
+            "properties": {
+              "source": {
+                "const": "davinci_data_market",
+                "default": "davinci_data_market",
+                "title": "Source",
+                "type": "string"
+              },
+              "scope": {
+                "enum": [
+                  "authorized",
+                  "all"
+                ],
+                "title": "Scope",
+                "type": "string"
+              },
+              "upstreamPage": {
+                "minimum": 1,
+                "title": "Upstreampage",
+                "type": "integer"
+              },
+              "upstreamPageSize": {
+                "maximum": 50,
+                "minimum": 1,
+                "title": "Upstreampagesize",
+                "type": "integer"
+              },
+              "totalMatches": {
+                "anyOf": [
+                  {
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Totalmatches"
+              },
+              "exhausted": {
+                "default": false,
+                "title": "Exhausted",
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "scope",
+              "upstreamPage",
+              "upstreamPageSize"
+            ],
+            "title": "SearchCoverage",
+            "type": "object"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Ranked page plus explicit continuation and upstream coverage.",
+        "properties": {
+          "status": {
+            "$ref": "#/$defs/ResultStatus"
+          },
+          "candidates": {
+            "items": {
+              "$ref": "#/$defs/DatasetCandidate"
+            },
+            "title": "Candidates",
+            "type": "array"
+          },
+          "nextCursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Nextcursor"
+          },
+          "coverage": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/SearchCoverage"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "issues": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Issues",
+            "type": "array"
+          }
+        },
+        "required": [
+          "status",
+          "candidates"
+        ],
+        "title": "DatasetSearchResult",
+        "type": "object"
+      }
+    },
+    "catalog.list_dataset_usages": {
+      "name": "catalog.list_dataset_usages",
+      "description": "List accessible dashboards associated with one authorized datasetRef. Read-only CUSTOM/SPACE candidates only; dataset association does not prove a particular field is used. Check truncated/issues; V1 and other Watcher resource coverage is not established. Returns dashboardId and spaceUid for navigation.",
+      "inputSchema": {
+        "$defs": {
+          "DatasetRef": {
+            "description": "Opaque, typed reference to one Davinci dataset.",
+            "examples": [
+              "warehouseTopic:10"
+            ],
+            "title": "DatasetRef",
+            "type": "string",
+            "pattern": "^(?:[A-Za-z][A-Za-z0-9_-]{0,63}):(?:[^/\\s]{1,256})$"
+          }
+        },
+        "additionalProperties": false,
+        "properties": {
+          "datasetRef": {
+            "$ref": "#/$defs/DatasetRef"
+          },
+          "limit": {
+            "default": 10,
+            "maximum": 20,
+            "minimum": 1,
+            "title": "Limit",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "datasetRef"
+        ],
+        "title": "DatasetUsagesRequest",
+        "type": "object"
+      },
+      "outputSchema": {
+        "$defs": {
+          "DatasetRef": {
+            "description": "Opaque, typed reference to one Davinci dataset.",
+            "examples": [
+              "warehouseTopic:10"
+            ],
+            "title": "DatasetRef",
+            "type": "string",
+            "pattern": "^(?:[A-Za-z][A-Za-z0-9_-]{0,63}):(?:[^/\\s]{1,256})$"
+          },
+          "DatasetUsage": {
+            "additionalProperties": false,
+            "description": "An accessible dashboard associated with a dataset, not proof of a metric binding.",
+            "properties": {
+              "dashboardId": {
+                "maxLength": 256,
+                "minLength": 1,
+                "title": "Dashboardid",
+                "type": "string"
+              },
+              "name": {
+                "maxLength": 256,
+                "minLength": 1,
+                "title": "Name",
+                "type": "string"
+              },
+              "resourceType": {
+                "enum": [
+                  "CUSTOM",
+                  "SPACE"
+                ],
+                "title": "Resourcetype",
+                "type": "string"
+              },
+              "spaceUid": {
+                "anyOf": [
+                  {
+                    "maxLength": 256,
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Spaceuid"
+              },
+              "spaceId": {
+                "anyOf": [
+                  {
+                    "maxLength": 256,
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Spaceid"
+              },
+              "evidence": {
+                "const": "dataset_association",
+                "default": "dataset_association",
+                "title": "Evidence",
+                "type": "string"
+              }
+            },
+            "required": [
+              "dashboardId",
+              "name",
+              "resourceType"
+            ],
+            "title": "DatasetUsage",
+            "type": "object"
+          },
+          "ResultStatus": {
+            "enum": [
+              "ok",
+              "partial",
+              "need_clarification",
+              "not_found",
+              "rejected"
+            ],
+            "title": "ResultStatus",
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Bounded related-dashboard discovery with explicit resource-type coverage limits.",
+        "properties": {
+          "status": {
+            "$ref": "#/$defs/ResultStatus"
+          },
+          "datasetRef": {
+            "$ref": "#/$defs/DatasetRef"
+          },
+          "usages": {
+            "items": {
+              "$ref": "#/$defs/DatasetUsage"
+            },
+            "maxItems": 20,
+            "title": "Usages",
+            "type": "array"
+          },
+          "truncated": {
+            "default": false,
+            "title": "Truncated",
+            "type": "boolean"
+          },
+          "supportedResourceTypes": {
+            "items": {
+              "enum": [
+                "CUSTOM",
+                "SPACE"
+              ],
+              "type": "string"
+            },
+            "title": "Supportedresourcetypes",
+            "type": "array"
+          },
+          "coverageComplete": {
+            "const": false,
+            "default": false,
+            "title": "Coveragecomplete",
+            "type": "boolean"
+          },
+          "issues": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Issues",
+            "type": "array"
+          }
+        },
+        "required": [
+          "status",
+          "datasetRef"
+        ],
+        "title": "DatasetUsagesResult",
+        "type": "object"
+      }
+    },
+    "analytics.resolve_data_requirements": {
+      "name": "analytics.resolve_data_requirements",
+      "description": "Assemble permission-safe dataset and field bindings only after the business meaning and target fields are already confirmed. For an unbound request, first use catalog.search_datasets to find candidates and clarify genuine alternatives. If this tool returns need_clarification, present its existing dataset, field and definition evidence and wait for the user; do not inspect unrelated existing Widgets or prepare containers, queries or writes. Other outcomes report permission or relation requirements.",
+      "inputSchema": {
+        "$defs": {
+          "FieldRef": {
+            "description": "Opaque field reference scoped by its authoritative dataset.",
+            "examples": [
+              "warehouseTopic:10/12285"
+            ],
+            "title": "FieldRef",
+            "type": "string",
+            "pattern": "^(?:[^/\\s]+:[^/\\s]+)/(?:[^/\\s]{1,256})$"
+          },
+          "FilterHint": {
+            "additionalProperties": false,
+            "properties": {
+              "term": {
+                "maxLength": 128,
+                "minLength": 1,
+                "pattern": ".*\\S.*",
+                "title": "Term",
+                "type": "string"
+              },
+              "operator": {
+                "anyOf": [
+                  {
+                    "enum": [
+                      "eq",
+                      "ne",
+                      "gt",
+                      "gte",
+                      "lt",
+                      "lte",
+                      "in",
+                      "not_in",
+                      "contains",
+                      "between"
+                    ],
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Operator"
+              },
+              "valueText": {
+                "anyOf": [
+                  {
+                    "maxLength": 512,
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Valuetext"
+              }
+            },
+            "required": [
+              "term"
+            ],
+            "title": "FilterHint",
+            "type": "object"
+          },
+          "MetricHint": {
+            "additionalProperties": false,
+            "description": "Business metric hint with an optional caller-confirmed field identity.",
+            "properties": {
+              "term": {
+                "maxLength": 128,
+                "minLength": 1,
+                "pattern": ".*\\S.*",
+                "title": "Term",
+                "type": "string"
+              },
+              "fieldRef": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/FieldRef"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "aggregation": {
+                "anyOf": [
+                  {
+                    "enum": [
+                      "sum",
+                      "avg",
+                      "count",
+                      "count_distinct",
+                      "min",
+                      "max"
+                    ],
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Aggregation"
+              }
+            },
+            "required": [
+              "term"
+            ],
+            "title": "MetricHint",
+            "type": "object"
+          },
+          "NamedHint": {
+            "additionalProperties": false,
+            "properties": {
+              "term": {
+                "maxLength": 128,
+                "minLength": 1,
+                "pattern": ".*\\S.*",
+                "title": "Term",
+                "type": "string"
+              }
+            },
+            "required": [
+              "term"
+            ],
+            "title": "NamedHint",
+            "type": "object"
+          },
+          "ResolutionHints": {
+            "additionalProperties": false,
+            "properties": {
+              "metrics": {
+                "items": {
+                  "$ref": "#/$defs/MetricHint"
+                },
+                "maxItems": 10,
+                "title": "Metrics",
+                "type": "array"
+              },
+              "dimensions": {
+                "items": {
+                  "$ref": "#/$defs/NamedHint"
+                },
+                "maxItems": 10,
+                "title": "Dimensions",
+                "type": "array"
+              },
+              "time": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/TimeHint"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "filters": {
+                "items": {
+                  "$ref": "#/$defs/FilterHint"
+                },
+                "maxItems": 20,
+                "title": "Filters",
+                "type": "array"
+              },
+              "businessDomains": {
+                "items": {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": ".*\\S.*",
+                  "type": "string"
+                },
+                "maxItems": 10,
+                "title": "Businessdomains",
+                "type": "array"
+              },
+              "datasetTerms": {
+                "items": {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": ".*\\S.*",
+                  "type": "string"
+                },
+                "maxItems": 5,
+                "title": "Datasetterms",
+                "type": "array"
+              },
+              "isComplete": {
+                "default": false,
+                "title": "Iscomplete",
+                "type": "boolean"
+              }
+            },
+            "title": "ResolutionHints",
+            "type": "object"
+          },
+          "TimeHint": {
+            "additionalProperties": false,
+            "properties": {
+              "term": {
+                "maxLength": 128,
+                "minLength": 1,
+                "pattern": ".*\\S.*",
+                "title": "Term",
+                "type": "string"
+              },
+              "rangeExpression": {
+                "anyOf": [
+                  {
+                    "maxLength": 128,
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Rangeexpression"
+              }
+            },
+            "required": [
+              "term"
+            ],
+            "title": "TimeHint",
+            "type": "object"
+          }
+        },
+        "additionalProperties": false,
+        "properties": {
+          "rawQuery": {
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Rawquery",
+            "type": "string"
+          },
+          "hints": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/ResolutionHints"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          }
+        },
+        "required": [
+          "rawQuery"
+        ],
+        "title": "ResolveDataRequirementsRequest",
+        "type": "object"
+      },
+      "outputSchema": {
+        "$defs": {
+          "AccessApplyPlanResult": {
+            "additionalProperties": false,
+            "properties": {
+              "status": {
+                "$ref": "#/$defs/ResultStatus"
+              },
+              "datasetRef": {
+                "$ref": "#/$defs/DatasetRef"
+              },
+              "permission": {
+                "$ref": "#/$defs/PermissionState"
+              },
+              "applicationScopes": {
+                "items": {
+                  "$ref": "#/$defs/ApplicationScope"
+                },
+                "title": "Applicationscopes",
+                "type": "array"
+              },
+              "applicationEntry": {
+                "anyOf": [
+                  {
+                    "maxLength": 1024,
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Applicationentry"
+              },
+              "approvalProcess": {
+                "anyOf": [
+                  {
+                    "maxLength": 1024,
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Approvalprocess"
+              },
+              "issues": {
+                "items": {
+                  "type": "string"
+                },
+                "title": "Issues",
+                "type": "array"
+              }
+            },
+            "required": [
+              "status",
+              "datasetRef",
+              "permission"
+            ],
+            "title": "AccessApplyPlanResult",
+            "type": "object"
+          },
+          "ApplicationScope": {
+            "additionalProperties": false,
+            "properties": {
+              "scopeId": {
+                "maxLength": 256,
+                "minLength": 1,
+                "title": "Scopeid",
+                "type": "string"
+              },
+              "name": {
+                "maxLength": 256,
+                "minLength": 1,
+                "title": "Name",
+                "type": "string"
+              },
+              "description": {
+                "anyOf": [
+                  {
+                    "maxLength": 1024,
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Description"
+              }
+            },
+            "required": [
+              "scopeId",
+              "name"
+            ],
+            "title": "ApplicationScope",
+            "type": "object"
+          },
+          "BindingAlternative": {
+            "additionalProperties": false,
+            "description": "An authorized dataset-field choice retaining its metadata definition.",
+            "properties": {
+              "datasetRef": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/DatasetRef"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "fieldName": {
+                "anyOf": [
+                  {
+                    "maxLength": 256,
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Fieldname"
+              },
+              "description": {
+                "anyOf": [
+                  {
+                    "maxLength": 1024,
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Description"
+              },
+              "label": {
+                "maxLength": 256,
+                "minLength": 1,
+                "title": "Label",
+                "type": "string"
+              },
+              "datasetName": {
+                "anyOf": [
+                  {
+                    "maxLength": 256,
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Datasetname"
+              },
+              "fieldRef": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/FieldRef"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              }
+            },
+            "required": [
+              "label"
+            ],
+            "title": "BindingAlternative",
+            "type": "object"
+          },
+          "BindingAmbiguity": {
+            "additionalProperties": false,
+            "properties": {
+              "requirement": {
+                "maxLength": 128,
+                "minLength": 1,
+                "pattern": ".*\\S.*",
+                "title": "Requirement",
+                "type": "string"
+              },
+              "options": {
+                "items": {
+                  "$ref": "#/$defs/BindingAlternative"
+                },
+                "maxItems": 3,
+                "minItems": 2,
+                "title": "Options",
+                "type": "array"
+              }
+            },
+            "required": [
+              "requirement",
+              "options"
+            ],
+            "title": "BindingAmbiguity",
+            "type": "object"
+          },
+          "BindingEvidence": {
+            "additionalProperties": false,
+            "properties": {
+              "tier": {
+                "$ref": "#/$defs/EvidenceTier"
+              },
+              "matchType": {
+                "$ref": "#/$defs/BindingMatchType"
+              },
+              "resourceRef": {
+                "maxLength": 512,
+                "minLength": 1,
+                "title": "Resourceref",
+                "type": "string"
+              },
+              "text": {
+                "maxLength": 512,
+                "minLength": 1,
+                "title": "Text",
+                "type": "string"
+              },
+              "source": {
+                "enum": [
+                  "davinci_catalog",
+                  "davinci_metadata",
+                  "trusted_alias",
+                  "intent_model"
+                ],
+                "title": "Source",
+                "type": "string"
+              }
+            },
+            "required": [
+              "tier",
+              "matchType",
+              "resourceRef",
+              "text",
+              "source"
+            ],
+            "title": "BindingEvidence",
+            "type": "object"
+          },
+          "BindingMatchType": {
+            "enum": [
+              "exact_name",
+              "trusted_alias",
+              "description_context",
+              "model_alias",
+              "token_overlap",
+              "dataset_only"
+            ],
+            "title": "BindingMatchType",
+            "type": "string"
+          },
+          "Clarification": {
+            "additionalProperties": false,
+            "properties": {
+              "question": {
+                "maxLength": 512,
+                "minLength": 1,
+                "title": "Question",
+                "type": "string"
+              },
+              "requirement": {
+                "maxLength": 128,
+                "minLength": 1,
+                "pattern": ".*\\S.*",
+                "title": "Requirement",
+                "type": "string"
+              },
+              "options": {
+                "items": {
+                  "$ref": "#/$defs/ClarificationOption"
+                },
+                "maxItems": 3,
+                "minItems": 1,
+                "title": "Options",
+                "type": "array"
+              }
+            },
+            "required": [
+              "question",
+              "requirement",
+              "options"
+            ],
+            "title": "Clarification",
+            "type": "object"
+          },
+          "ClarificationOption": {
+            "additionalProperties": false,
+            "description": "A selectable clarification retaining the exact authorized field identity.",
+            "properties": {
+              "datasetRef": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/DatasetRef"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "fieldName": {
+                "anyOf": [
+                  {
+                    "maxLength": 256,
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Fieldname"
+              },
+              "description": {
+                "anyOf": [
+                  {
+                    "maxLength": 1024,
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Description"
+              },
+              "label": {
+                "maxLength": 256,
+                "minLength": 1,
+                "title": "Label",
+                "type": "string"
+              },
+              "datasetName": {
+                "anyOf": [
+                  {
+                    "maxLength": 256,
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Datasetname"
+              },
+              "fieldRef": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/FieldRef"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              }
+            },
+            "required": [
+              "label"
+            ],
+            "title": "ClarificationOption",
+            "type": "object"
+          },
+          "Coverage": {
+            "additionalProperties": false,
+            "properties": {
+              "required": {
+                "maximum": 41,
+                "minimum": 0,
+                "title": "Required",
+                "type": "integer"
+              },
+              "matched": {
+                "maximum": 41,
+                "minimum": 0,
+                "title": "Matched",
+                "type": "integer"
+              },
+              "ratio": {
+                "maximum": 1,
+                "minimum": 0,
+                "title": "Ratio",
+                "type": "number"
+              }
+            },
+            "required": [
+              "required",
+              "matched",
+              "ratio"
+            ],
+            "title": "Coverage",
+            "type": "object"
+          },
+          "DatasetRef": {
+            "description": "Opaque, typed reference to one Davinci dataset.",
+            "examples": [
+              "warehouseTopic:10"
+            ],
+            "title": "DatasetRef",
+            "type": "string",
+            "pattern": "^(?:[A-Za-z][A-Za-z0-9_-]{0,63}):(?:[^/\\s]{1,256})$"
+          },
+          "EvidenceTier": {
+            "enum": [
+              "A",
+              "B",
+              "C",
+              "D"
+            ],
+            "title": "EvidenceTier",
+            "type": "string"
+          },
+          "FieldBinding": {
+            "additionalProperties": false,
+            "properties": {
+              "requestedTerm": {
+                "maxLength": 128,
+                "minLength": 1,
+                "pattern": ".*\\S.*",
+                "title": "Requestedterm",
+                "type": "string"
+              },
+              "fieldRef": {
+                "$ref": "#/$defs/FieldRef"
+              },
+              "fieldName": {
+                "maxLength": 256,
+                "minLength": 1,
+                "title": "Fieldname",
+                "type": "string"
+              },
+              "description": {
+                "anyOf": [
+                  {
+                    "maxLength": 1024,
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Description"
+              },
+              "role": {
+                "enum": [
+                  "metric",
+                  "dimension",
+                  "time",
+                  "filter"
+                ],
+                "title": "Role",
+                "type": "string"
+              },
+              "matchType": {
+                "$ref": "#/$defs/BindingMatchType"
+              },
+              "evidenceTier": {
+                "$ref": "#/$defs/EvidenceTier"
+              },
+              "aggregation": {
+                "anyOf": [
+                  {
+                    "enum": [
+                      "sum",
+                      "avg",
+                      "count",
+                      "count_distinct",
+                      "min",
+                      "max"
+                    ],
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Aggregation"
+              },
+              "operator": {
+                "anyOf": [
+                  {
+                    "enum": [
+                      "eq",
+                      "ne",
+                      "gt",
+                      "gte",
+                      "lt",
+                      "lte",
+                      "in",
+                      "not_in",
+                      "contains",
+                      "between"
+                    ],
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Operator"
+              },
+              "valueText": {
+                "anyOf": [
+                  {
+                    "maxLength": 512,
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Valuetext"
+              },
+              "evidence": {
+                "items": {
+                  "$ref": "#/$defs/BindingEvidence"
+                },
+                "maxItems": 5,
+                "title": "Evidence",
+                "type": "array"
+              }
+            },
+            "required": [
+              "requestedTerm",
+              "fieldRef",
+              "fieldName",
+              "role",
+              "matchType",
+              "evidenceTier"
+            ],
+            "title": "FieldBinding",
+            "type": "object"
+          },
+          "FieldBindings": {
+            "additionalProperties": false,
+            "properties": {
+              "metrics": {
+                "items": {
+                  "$ref": "#/$defs/FieldBinding"
+                },
+                "maxItems": 10,
+                "title": "Metrics",
+                "type": "array"
+              },
+              "dimensions": {
+                "items": {
+                  "$ref": "#/$defs/FieldBinding"
+                },
+                "maxItems": 10,
+                "title": "Dimensions",
+                "type": "array"
+              },
+              "time": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/FieldBinding"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "filters": {
+                "items": {
+                  "$ref": "#/$defs/FieldBinding"
+                },
+                "maxItems": 20,
+                "title": "Filters",
+                "type": "array"
+              }
+            },
+            "title": "FieldBindings",
+            "type": "object"
+          },
+          "FieldRef": {
+            "description": "Opaque field reference scoped by its authoritative dataset.",
+            "examples": [
+              "warehouseTopic:10/12285"
+            ],
+            "title": "FieldRef",
+            "type": "string",
+            "pattern": "^(?:[^/\\s]+:[^/\\s]+)/(?:[^/\\s]{1,256})$"
+          },
+          "NormalizedFilter": {
+            "additionalProperties": false,
+            "properties": {
+              "term": {
+                "maxLength": 128,
+                "minLength": 1,
+                "pattern": ".*\\S.*",
+                "title": "Term",
+                "type": "string"
+              },
+              "operator": {
+                "anyOf": [
+                  {
+                    "enum": [
+                      "eq",
+                      "ne",
+                      "gt",
+                      "gte",
+                      "lt",
+                      "lte",
+                      "in",
+                      "not_in",
+                      "contains",
+                      "between"
+                    ],
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Operator"
+              },
+              "valueText": {
+                "anyOf": [
+                  {
+                    "maxLength": 512,
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Valuetext"
+              }
+            },
+            "required": [
+              "term"
+            ],
+            "title": "NormalizedFilter",
+            "type": "object"
+          },
+          "NormalizedIntent": {
+            "additionalProperties": false,
+            "properties": {
+              "metrics": {
+                "items": {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": ".*\\S.*",
+                  "type": "string"
+                },
+                "maxItems": 10,
+                "title": "Metrics",
+                "type": "array"
+              },
+              "dimensions": {
+                "items": {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": ".*\\S.*",
+                  "type": "string"
+                },
+                "maxItems": 10,
+                "title": "Dimensions",
+                "type": "array"
+              },
+              "timeTerm": {
+                "anyOf": [
+                  {
+                    "maxLength": 128,
+                    "minLength": 1,
+                    "pattern": ".*\\S.*",
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Timeterm"
+              },
+              "timeRange": {
+                "anyOf": [
+                  {
+                    "maxLength": 128,
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Timerange"
+              },
+              "filters": {
+                "items": {
+                  "$ref": "#/$defs/NormalizedFilter"
+                },
+                "maxItems": 20,
+                "title": "Filters",
+                "type": "array"
+              },
+              "businessDomains": {
+                "items": {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": ".*\\S.*",
+                  "type": "string"
+                },
+                "maxItems": 10,
+                "title": "Businessdomains",
+                "type": "array"
+              },
+              "datasetTerms": {
+                "items": {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": ".*\\S.*",
+                  "type": "string"
+                },
+                "maxItems": 5,
+                "title": "Datasetterms",
+                "type": "array"
+              },
+              "comparison": {
+                "anyOf": [
+                  {
+                    "enum": [
+                      "previous_period",
+                      "previous_month",
+                      "previous_year",
+                      "month_over_month",
+                      "year_over_year"
+                    ],
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Comparison"
+              }
+            },
+            "title": "NormalizedIntent",
+            "type": "object"
+          },
+          "PermissionCandidate": {
+            "additionalProperties": false,
+            "properties": {
+              "datasetRef": {
+                "$ref": "#/$defs/DatasetRef"
+              },
+              "datasetName": {
+                "maxLength": 256,
+                "minLength": 1,
+                "title": "Datasetname",
+                "type": "string"
+              },
+              "businessDomains": {
+                "items": {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": ".*\\S.*",
+                  "type": "string"
+                },
+                "maxItems": 10,
+                "title": "Businessdomains",
+                "type": "array"
+              },
+              "permission": {
+                "$ref": "#/$defs/PermissionState"
+              },
+              "applyPlan": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/AccessApplyPlanResult"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              }
+            },
+            "required": [
+              "datasetRef",
+              "datasetName",
+              "permission"
+            ],
+            "title": "PermissionCandidate",
+            "type": "object"
+          },
+          "PermissionState": {
+            "enum": [
+              "authorized",
+              "discoverable_but_unauthorized",
+              "hidden"
+            ],
+            "title": "PermissionState",
+            "type": "string"
+          },
+          "RequiredFilter": {
+            "additionalProperties": false,
+            "properties": {
+              "fieldRef": {
+                "$ref": "#/$defs/FieldRef"
+              },
+              "name": {
+                "maxLength": 256,
+                "minLength": 1,
+                "title": "Name",
+                "type": "string"
+              },
+              "description": {
+                "anyOf": [
+                  {
+                    "maxLength": 1024,
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Description"
+              },
+              "required": {
+                "default": true,
+                "title": "Required",
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "fieldRef",
+              "name"
+            ],
+            "title": "RequiredFilter",
+            "type": "object"
+          },
+          "ResolutionPlan": {
+            "additionalProperties": false,
+            "properties": {
+              "datasetRef": {
+                "$ref": "#/$defs/DatasetRef"
+              },
+              "datasetName": {
+                "maxLength": 256,
+                "minLength": 1,
+                "title": "Datasetname",
+                "type": "string"
+              },
+              "permission": {
+                "$ref": "#/$defs/PermissionState"
+              },
+              "bindings": {
+                "$ref": "#/$defs/FieldBindings"
+              },
+              "coverage": {
+                "$ref": "#/$defs/Coverage"
+              },
+              "missingRequirements": {
+                "items": {
+                  "maxLength": 512,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "maxItems": 41,
+                "title": "Missingrequirements",
+                "type": "array"
+              },
+              "requiredFilters": {
+                "items": {
+                  "$ref": "#/$defs/RequiredFilter"
+                },
+                "maxItems": 50,
+                "title": "Requiredfilters",
+                "type": "array"
+              },
+              "requiredFieldRefs": {
+                "items": {
+                  "$ref": "#/$defs/FieldRef"
+                },
+                "maxItems": 200,
+                "title": "Requiredfieldrefs",
+                "type": "array"
+              },
+              "metadataVersion": {
+                "maxLength": 256,
+                "minLength": 1,
+                "title": "Metadataversion",
+                "type": "string"
+              },
+              "evidence": {
+                "items": {
+                  "$ref": "#/$defs/BindingEvidence"
+                },
+                "maxItems": 50,
+                "title": "Evidence",
+                "type": "array"
+              },
+              "ambiguities": {
+                "items": {
+                  "$ref": "#/$defs/BindingAmbiguity"
+                },
+                "maxItems": 20,
+                "title": "Ambiguities",
+                "type": "array"
+              },
+              "issues": {
+                "items": {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "maxItems": 50,
+                "title": "Issues",
+                "type": "array"
+              }
+            },
+            "required": [
+              "datasetRef",
+              "datasetName",
+              "permission",
+              "coverage",
+              "metadataVersion"
+            ],
+            "title": "ResolutionPlan",
+            "type": "object"
+          },
+          "ResolutionStatus": {
+            "enum": [
+              "resolved",
+              "need_clarification",
+              "permission_required",
+              "needs_relation",
+              "not_found",
+              "partial"
+            ],
+            "title": "ResolutionStatus",
+            "type": "string"
+          },
+          "ResultStatus": {
+            "enum": [
+              "ok",
+              "partial",
+              "need_clarification",
+              "not_found",
+              "rejected"
+            ],
+            "title": "ResultStatus",
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "properties": {
+          "status": {
+            "$ref": "#/$defs/ResolutionStatus"
+          },
+          "normalizedIntent": {
+            "$ref": "#/$defs/NormalizedIntent"
+          },
+          "plans": {
+            "items": {
+              "$ref": "#/$defs/ResolutionPlan"
+            },
+            "maxItems": 3,
+            "title": "Plans",
+            "type": "array"
+          },
+          "permissionCandidates": {
+            "items": {
+              "$ref": "#/$defs/PermissionCandidate"
+            },
+            "maxItems": 3,
+            "title": "Permissioncandidates",
+            "type": "array"
+          },
+          "clarification": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Clarification"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "issues": {
+            "items": {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            "maxItems": 50,
+            "title": "Issues",
+            "type": "array"
+          }
+        },
+        "required": [
+          "status"
+        ],
+        "title": "ResolveDataRequirementsResult",
+        "type": "object"
+      }
+    }
+  },
+  "responses": {
+    "default": {
+      "catalog.search_datasets": {
+        "status": "ok",
+        "candidates": [
+          {
+            "datasetRef": "warehouseTopic:662",
+            "name": "回收订单",
+            "description": null,
+            "businessDomains": [],
+            "datasetType": "warehouseTopic",
+            "permission": "authorized",
+            "matchedFields": [
+              {
+                "fieldRef": "warehouseTopic:662/net_sales",
+                "name": "净成交额",
+                "description": "支付金额减去已退款金额，排除取消订单；单位元",
+                "roles": [
+                  "metric"
+                ],
+                "dataType": "decimal",
+                "required": false,
+                "requiredCondition": false,
+                "group": null,
+                "sourceRef": null,
+                "dimensionIds": [],
+                "fieldRelation": null
+              }
+            ],
+            "evidence": [],
+            "scores": {
+              "keyword": 1.0,
+              "semantic": null,
+              "recipe": null,
+              "final": 1.0
+            },
+            "dataUpdateTime": null,
+            "applicationCount": null
+          }
+        ],
+        "nextCursor": null,
+        "coverage": {
+          "source": "davinci_data_market",
+          "scope": "authorized",
+          "upstreamPage": 1,
+          "upstreamPageSize": 5,
+          "totalMatches": 1,
+          "exhausted": true
+        },
+        "issues": []
+      },
+      "catalog.get_dataset_schema": {
+        "warehouseTopic:662": {
+          "status": "ok",
+          "dataset": {
+            "datasetRef": "warehouseTopic:662",
+            "name": "回收订单",
+            "description": null,
+            "businessDomains": [],
+            "datasetType": "warehouseTopic",
+            "permission": "authorized",
+            "matchedFields": [
+              {
+                "fieldRef": "warehouseTopic:662/net_sales",
+                "name": "净成交额",
+                "description": "支付金额减去已退款金额，排除取消订单；单位元",
+                "roles": [
+                  "metric"
+                ],
+                "dataType": "decimal",
+                "required": false,
+                "requiredCondition": false,
+                "group": null,
+                "sourceRef": null,
+                "dimensionIds": [],
+                "fieldRelation": null
+              }
+            ],
+            "evidence": [],
+            "scores": {
+              "keyword": 1.0,
+              "semantic": null,
+              "recipe": null,
+              "final": 1.0
+            },
+            "dataUpdateTime": null,
+            "applicationCount": null
+          },
+          "fields": [
+            {
+              "fieldRef": "warehouseTopic:662/net_sales",
+              "name": "净成交额",
+              "description": "支付金额减去已退款金额，排除取消订单；单位元",
+              "roles": [
+                "metric"
+              ],
+              "dataType": "decimal",
+              "required": false,
+              "requiredCondition": false,
+              "group": null,
+              "sourceRef": null,
+              "dimensionIds": [],
+              "fieldRelation": null
+            }
+          ],
+          "requiredFilters": [],
+          "grainFieldRefs": [],
+          "sourceRefs": [],
+          "relationSummary": null,
+          "metadataVersion": "feedback-v1",
+          "issues": [],
+          "fieldCount": 1,
+          "truncated": false
+        }
+      },
+      "catalog.list_dataset_usages": {
+        "status": "ok",
+        "datasetRef": "warehouseTopic:662",
+        "usages": [
+          {
+            "dashboardId": "333",
+            "name": "回收经营",
+            "resourceType": "CUSTOM",
+            "spaceUid": null,
+            "spaceId": null,
+            "evidence": "dataset_association"
+          }
+        ],
+        "truncated": false,
+        "supportedResourceTypes": [
+          "CUSTOM",
+          "SPACE"
+        ],
+        "coverageComplete": false,
+        "issues": [
+          "FIELD_BINDINGS_NOT_CHECKED",
+          "RESOURCE_TYPE_COVERAGE_LIMITED"
+        ]
+      },
+      "analytics.resolve_data_requirements": {
+        "status": "need_clarification",
+        "normalizedIntent": {
+          "metrics": [],
+          "dimensions": [],
+          "timeTerm": null,
+          "timeRange": null,
+          "filters": [],
+          "businessDomains": [],
+          "datasetTerms": [],
+          "comparison": null
+        },
+        "plans": [],
+        "permissionCandidates": [],
+        "clarification": {
+          "question": "选择哪一个数据集和指标口径？",
+          "requirement": "成交额",
+          "options": [
+            {
+              "datasetRef": "warehouseTopic:662",
+              "fieldName": "成交额",
+              "description": "支付成功金额，包含已退款订单",
+              "label": "回收订单 · 成交额",
+              "datasetName": "回收订单",
+              "fieldRef": "warehouseTopic:662/paid"
+            },
+            {
+              "datasetRef": "warehouseTopic:663",
+              "fieldName": "成交额",
+              "description": "验收入库估价金额，不代表实际支付",
+              "label": "门店回收 · 成交额",
+              "datasetName": "门店回收",
+              "fieldRef": "warehouseTopic:663/accepted"
+            }
+          ]
+        },
+        "issues": [
+          "AMBIGUOUS_DATASET_SELECTION"
+        ]
+      }
+    },
+    "combination": {
+      "catalog.search_datasets": {
+        "status": "ok",
+        "candidates": [
+          {
+            "datasetRef": "warehouseTopic:662",
+            "name": "回收订单",
+            "description": null,
+            "businessDomains": [],
+            "datasetType": "warehouseTopic",
+            "permission": "authorized",
+            "matchedFields": [
+              {
+                "fieldRef": "warehouseTopic:662/paid",
+                "name": "成交额",
+                "description": "支付成功金额，包含已退款订单",
+                "roles": [
+                  "metric"
+                ],
+                "dataType": "decimal",
+                "required": false,
+                "requiredCondition": false,
+                "group": null,
+                "sourceRef": null,
+                "dimensionIds": [],
+                "fieldRelation": null
+              }
+            ],
+            "evidence": [],
+            "scores": {
+              "keyword": 1.0,
+              "semantic": null,
+              "recipe": null,
+              "final": 1.0
+            },
+            "dataUpdateTime": null,
+            "applicationCount": null
+          },
+          {
+            "datasetRef": "warehouseTopic:663",
+            "name": "门店回收",
+            "description": null,
+            "businessDomains": [],
+            "datasetType": "warehouseTopic",
+            "permission": "authorized",
+            "matchedFields": [
+              {
+                "fieldRef": "warehouseTopic:663/accepted",
+                "name": "成交额",
+                "description": "验收入库估价金额，不代表实际支付",
+                "roles": [
+                  "metric"
+                ],
+                "dataType": "decimal",
+                "required": false,
+                "requiredCondition": false,
+                "group": null,
+                "sourceRef": null,
+                "dimensionIds": [],
+                "fieldRelation": null
+              }
+            ],
+            "evidence": [],
+            "scores": {
+              "keyword": 1.0,
+              "semantic": null,
+              "recipe": null,
+              "final": 1.0
+            },
+            "dataUpdateTime": null,
+            "applicationCount": null
+          }
+        ],
+        "nextCursor": null,
+        "coverage": {
+          "source": "davinci_data_market",
+          "scope": "authorized",
+          "upstreamPage": 1,
+          "upstreamPageSize": 5,
+          "totalMatches": 2,
+          "exhausted": true
+        },
+        "issues": []
+      },
+      "catalog.get_dataset_schema": {
+        "warehouseTopic:662": {
+          "status": "ok",
+          "dataset": {
+            "datasetRef": "warehouseTopic:662",
+            "name": "回收订单",
+            "description": null,
+            "businessDomains": [],
+            "datasetType": "warehouseTopic",
+            "permission": "authorized",
+            "matchedFields": [
+              {
+                "fieldRef": "warehouseTopic:662/paid",
+                "name": "成交额",
+                "description": "支付成功金额，包含已退款订单",
+                "roles": [
+                  "metric"
+                ],
+                "dataType": "decimal",
+                "required": false,
+                "requiredCondition": false,
+                "group": null,
+                "sourceRef": null,
+                "dimensionIds": [],
+                "fieldRelation": null
+              }
+            ],
+            "evidence": [],
+            "scores": {
+              "keyword": 1.0,
+              "semantic": null,
+              "recipe": null,
+              "final": 1.0
+            },
+            "dataUpdateTime": null,
+            "applicationCount": null
+          },
+          "fields": [
+            {
+              "fieldRef": "warehouseTopic:662/paid",
+              "name": "成交额",
+              "description": "支付成功金额，包含已退款订单",
+              "roles": [
+                "metric"
+              ],
+              "dataType": "decimal",
+              "required": false,
+              "requiredCondition": false,
+              "group": null,
+              "sourceRef": null,
+              "dimensionIds": [],
+              "fieldRelation": null
+            }
+          ],
+          "requiredFilters": [],
+          "grainFieldRefs": [],
+          "sourceRefs": [],
+          "relationSummary": null,
+          "metadataVersion": "feedback-v1",
+          "issues": [],
+          "fieldCount": 1,
+          "truncated": false
+        },
+        "warehouseTopic:663": {
+          "status": "ok",
+          "dataset": {
+            "datasetRef": "warehouseTopic:663",
+            "name": "门店回收",
+            "description": null,
+            "businessDomains": [],
+            "datasetType": "warehouseTopic",
+            "permission": "authorized",
+            "matchedFields": [
+              {
+                "fieldRef": "warehouseTopic:663/accepted",
+                "name": "成交额",
+                "description": "验收入库估价金额，不代表实际支付",
+                "roles": [
+                  "metric"
+                ],
+                "dataType": "decimal",
+                "required": false,
+                "requiredCondition": false,
+                "group": null,
+                "sourceRef": null,
+                "dimensionIds": [],
+                "fieldRelation": null
+              }
+            ],
+            "evidence": [],
+            "scores": {
+              "keyword": 1.0,
+              "semantic": null,
+              "recipe": null,
+              "final": 1.0
+            },
+            "dataUpdateTime": null,
+            "applicationCount": null
+          },
+          "fields": [
+            {
+              "fieldRef": "warehouseTopic:663/accepted",
+              "name": "成交额",
+              "description": "验收入库估价金额，不代表实际支付",
+              "roles": [
+                "metric"
+              ],
+              "dataType": "decimal",
+              "required": false,
+              "requiredCondition": false,
+              "group": null,
+              "sourceRef": null,
+              "dimensionIds": [],
+              "fieldRelation": null
+            }
+          ],
+          "requiredFilters": [],
+          "grainFieldRefs": [],
+          "sourceRefs": [],
+          "relationSummary": null,
+          "metadataVersion": "feedback-v1",
+          "issues": [],
+          "fieldCount": 1,
+          "truncated": false
+        }
+      },
+      "catalog.list_dataset_usages": {
+        "status": "ok",
+        "datasetRef": "warehouseTopic:662",
+        "usages": [
+          {
+            "dashboardId": "333",
+            "name": "回收经营",
+            "resourceType": "CUSTOM",
+            "spaceUid": null,
+            "spaceId": null,
+            "evidence": "dataset_association"
+          }
+        ],
+        "truncated": false,
+        "supportedResourceTypes": [
+          "CUSTOM",
+          "SPACE"
+        ],
+        "coverageComplete": false,
+        "issues": [
+          "FIELD_BINDINGS_NOT_CHECKED",
+          "RESOURCE_TYPE_COVERAGE_LIMITED"
+        ]
+      },
+      "analytics.resolve_data_requirements": {
+        "status": "need_clarification",
+        "normalizedIntent": {
+          "metrics": [],
+          "dimensions": [],
+          "timeTerm": null,
+          "timeRange": null,
+          "filters": [],
+          "businessDomains": [],
+          "datasetTerms": [],
+          "comparison": null
+        },
+        "plans": [],
+        "permissionCandidates": [],
+        "clarification": {
+          "question": "选择哪一个数据集和指标口径？",
+          "requirement": "成交额",
+          "options": [
+            {
+              "datasetRef": "warehouseTopic:662",
+              "fieldName": "成交额",
+              "description": "支付成功金额，包含已退款订单",
+              "label": "回收订单 · 成交额",
+              "datasetName": "回收订单",
+              "fieldRef": "warehouseTopic:662/paid"
+            },
+            {
+              "datasetRef": "warehouseTopic:663",
+              "fieldName": "成交额",
+              "description": "验收入库估价金额，不代表实际支付",
+              "label": "门店回收 · 成交额",
+              "datasetName": "门店回收",
+              "fieldRef": "warehouseTopic:663/accepted"
+            }
+          ]
+        },
+        "issues": [
+          "AMBIGUOUS_DATASET_SELECTION"
+        ]
+      }
+    }
+  },
+  "definitionSupplement": {
+    "upstreamSearch": {
+      "status": "ok",
+      "candidates": [
+        {
+          "datasetRef": "warehouseTopic:741",
+          "name": "渠道结算",
+          "description": null,
+          "businessDomains": [],
+          "datasetType": "warehouseTopic",
+          "permission": "authorized",
+          "matchedFields": [
+            {
+              "fieldRef": "warehouseTopic:741/booked_amount",
+              "name": "结算额",
+              "description": null,
+              "roles": [
+                "metric"
+              ],
+              "dataType": "decimal",
+              "required": false,
+              "requiredCondition": false,
+              "group": null,
+              "sourceRef": null,
+              "dimensionIds": [],
+              "fieldRelation": null
+            },
+            {
+              "fieldRef": "warehouseTopic:741/accepted_value",
+              "name": "结算额",
+              "description": null,
+              "roles": [
+                "metric"
+              ],
+              "dataType": "decimal",
+              "required": false,
+              "requiredCondition": false,
+              "group": null,
+              "sourceRef": null,
+              "dimensionIds": [],
+              "fieldRelation": null
+            }
+          ],
+          "evidence": [],
+          "scores": {
+            "keyword": 1.0,
+            "semantic": null,
+            "recipe": null,
+            "final": 1.0
+          },
+          "dataUpdateTime": null,
+          "applicationCount": null
+        }
+      ],
+      "nextCursor": null,
+      "coverage": {
+        "source": "davinci_data_market",
+        "scope": "authorized",
+        "upstreamPage": 1,
+        "upstreamPageSize": 5,
+        "totalMatches": 1,
+        "exhausted": true
+      },
+      "issues": []
+    },
+    "result": {
+      "status": "ok",
+      "candidates": [
+        {
+          "datasetRef": "warehouseTopic:741",
+          "name": "渠道结算",
+          "description": null,
+          "businessDomains": [],
+          "datasetType": "warehouseTopic",
+          "permission": "authorized",
+          "matchedFields": [
+            {
+              "fieldRef": "warehouseTopic:741/accepted_value",
+              "name": "结算额",
+              "description": "验收入库估值，不代表实际支付",
+              "roles": [
+                "metric"
+              ],
+              "dataType": "decimal",
+              "required": false,
+              "requiredCondition": false,
+              "group": null,
+              "sourceRef": null,
+              "dimensionIds": [],
+              "fieldRelation": null
+            },
+            {
+              "fieldRef": "warehouseTopic:741/booked_amount",
+              "name": "结算额",
+              "description": "已入账金额，包含退货",
+              "roles": [
+                "metric"
+              ],
+              "dataType": "decimal",
+              "required": false,
+              "requiredCondition": false,
+              "group": null,
+              "sourceRef": null,
+              "dimensionIds": [],
+              "fieldRelation": null
+            }
+          ],
+          "evidence": [
+            {
+              "kind": "field_name_match",
+              "resourceRef": "warehouseTopic:741/booked_amount",
+              "text": "结算额",
+              "source": "davinci_catalog"
+            },
+            {
+              "kind": "field_name_match",
+              "resourceRef": "warehouseTopic:741/accepted_value",
+              "text": "结算额",
+              "source": "davinci_catalog"
+            },
+            {
+              "kind": "token_overlap",
+              "resourceRef": "warehouseTopic:741",
+              "text": "算额 结算",
+              "source": "davinci_catalog"
+            },
+            {
+              "kind": "field_token_overlap",
+              "resourceRef": "warehouseTopic:741/booked_amount",
+              "text": "算额 结算",
+              "source": "davinci_catalog"
+            },
+            {
+              "kind": "field_token_overlap",
+              "resourceRef": "warehouseTopic:741/accepted_value",
+              "text": "算额 结算",
+              "source": "davinci_catalog"
+            }
+          ],
+          "scores": {
+            "keyword": 0.3333333333333333,
+            "semantic": null,
+            "recipe": null,
+            "final": 0.3333333333333333
+          },
+          "dataUpdateTime": null,
+          "applicationCount": null
+        }
+      ],
+      "nextCursor": null,
+      "coverage": {
+        "source": "davinci_data_market",
+        "scope": "authorized",
+        "upstreamPage": 1,
+        "upstreamPageSize": 5,
+        "totalMatches": 1,
+        "exhausted": true
+      },
+      "issues": []
+    },
+    "schemaReads": [
+      "warehouseTopic:741"
+    ],
+    "accessChecks": 2,
+    "measurement": "Production service executed at fixture export; not live upstream latency"
+  }
+}

@@ -1,0 +1,136 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2155" height="2070" viewBox="0 0 2155 2070">
+  <rect width="2155" height="2070" fill="#FFFFFF" />
+  <style>text{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif;fill:#263238}</style>
+  <defs>
+    <marker id="arrow-1565C0" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,4 L0,8 z" fill="#1565C0" />
+    </marker>
+    <marker id="arrow-2E7D32" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,4 L0,8 z" fill="#2E7D32" />
+    </marker>
+    <marker id="arrow-455A64" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,4 L0,8 z" fill="#455A64" />
+    </marker>
+    <marker id="arrow-757575" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,4 L0,8 z" fill="#757575" />
+    </marker>
+    <marker id="arrow-7B1FA2" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,4 L0,8 z" fill="#7B1FA2" />
+    </marker>
+    <marker id="arrow-D32F2F" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,4 L0,8 z" fill="#D32F2F" />
+    </marker>
+    <marker id="arrow-EF6C00" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,4 L0,8 z" fill="#EF6C00" />
+    </marker>
+  </defs>
+  <rect x="20.0" y="80.0" width="220.0" height="1970.0" fill="#FAFAFA" stroke="#B0BEC5" stroke-width="1" />
+  <rect x="20.0" y="80.0" width="220.0" height="42" fill="#ECEFF1" stroke="#B0BEC5" stroke-width="1" />
+  <text x="30.0" y="107.0" font-size="13" font-weight="700">调用方 / 前端</text>
+  <rect x="240.0" y="80.0" width="365.0" height="1970.0" fill="#FAFAFA" stroke="#B0BEC5" stroke-width="1" />
+  <rect x="240.0" y="80.0" width="365.0" height="42" fill="#ECEFF1" stroke="#B0BEC5" stroke-width="1" />
+  <text x="250.0" y="107.0" font-size="13" font-weight="700">本机 AgentHost :8765</text>
+  <rect x="605.0" y="80.0" width="365.0" height="1970.0" fill="#FAFAFA" stroke="#B0BEC5" stroke-width="1" />
+  <rect x="605.0" y="80.0" width="365.0" height="42" fill="#ECEFF1" stroke="#B0BEC5" stroke-width="1" />
+  <text x="615.0" y="107.0" font-size="13" font-weight="700">服务2 SQLBot :8002</text>
+  <rect x="970.0" y="80.0" width="335.0" height="1970.0" fill="#FAFAFA" stroke="#B0BEC5" stroke-width="1" />
+  <rect x="970.0" y="80.0" width="335.0" height="42" fill="#ECEFF1" stroke="#B0BEC5" stroke-width="1" />
+  <text x="980.0" y="107.0" font-size="13" font-weight="700">StarRocks / hive</text>
+  <rect x="1305.0" y="80.0" width="405.0" height="1970.0" fill="#FAFAFA" stroke="#B0BEC5" stroke-width="1" />
+  <rect x="1305.0" y="80.0" width="405.0" height="42" fill="#ECEFF1" stroke="#B0BEC5" stroke-width="1" />
+  <text x="1315.0" y="107.0" font-size="13" font-weight="700">本机 SQLBot 隔离联调</text>
+  <rect x="1710.0" y="80.0" width="425.0" height="1970.0" fill="#FAFAFA" stroke="#B0BEC5" stroke-width="1" />
+  <rect x="1710.0" y="80.0" width="425.0" height="42" fill="#ECEFF1" stroke="#B0BEC5" stroke-width="1" />
+  <text x="1720.0" y="107.0" font-size="13" font-weight="700">服务2问数边界</text>
+  <path d="M130.0,263.0 L422.5,290.0" fill="none" stroke="#1565C0" stroke-width="2" marker-end="url(#arrow-1565C0)" />
+  <path d="M422.5,402.0 L787.5,425.0" fill="none" stroke="#1565C0" stroke-width="2" marker-end="url(#arrow-1565C0)" />
+  <path d="M787.5,533.0 L787.5,560.0" fill="none" stroke="#1565C0" stroke-width="2" marker-end="url(#arrow-1565C0)" />
+  <path d="M787.5,672.0 L1137.5,695.0" fill="none" stroke="#1565C0" stroke-width="2" marker-end="url(#arrow-1565C0)" />
+  <path d="M1137.5,803.0 L787.5,830.0" fill="none" stroke="#1565C0" stroke-width="2" marker-end="url(#arrow-1565C0)" />
+  <path d="M787.5,942.0 L787.5,965.0" fill="none" stroke="#1565C0" stroke-width="2" marker-end="url(#arrow-1565C0)" />
+  <path d="M787.5,1077.0 L1137.5,1100.0" fill="none" stroke="#1565C0" stroke-width="2" marker-end="url(#arrow-1565C0)" />
+  <path d="M1137.5,1216.0 L422.5,1240.0" fill="none" stroke="#1565C0" stroke-width="2" marker-end="url(#arrow-1565C0)" />
+  <path d="M422.5,1356.0 L130.0,1380.0" fill="none" stroke="#1565C0" stroke-width="2" marker-end="url(#arrow-1565C0)" />
+  <path d="M1507.5,433.0 L1507.5,515.0" fill="none" stroke="#1565C0" stroke-width="2" marker-end="url(#arrow-1565C0)" />
+  <path d="M1507.5,633.0 L1507.5,715.0" fill="none" stroke="#1565C0" stroke-width="2" marker-end="url(#arrow-1565C0)" />
+  <path d="M1922.5,433.0 L1922.5,515.0" fill="none" stroke="#D32F2F" stroke-width="3" marker-end="url(#arrow-D32F2F)" stroke-dasharray="8 4" />
+  <path d="M1922.5,633.0 L1922.5,715.0" fill="none" stroke="#D32F2F" stroke-width="3" marker-end="url(#arrow-D32F2F)" stroke-dasharray="8 4" />
+  <path d="M130.0,1498.0 L977.0,1650.0" fill="none" stroke="#1565C0" stroke-width="2" marker-end="url(#arrow-1565C0)" />
+  <path d="M1507.5,833.0 L977.0,1650.0" fill="none" stroke="#EF6C00" stroke-width="2" marker-end="url(#arrow-EF6C00)" />
+  <path d="M1922.5,833.0 L977.0,1650.0" fill="none" stroke="#D32F2F" stroke-width="3" marker-end="url(#arrow-D32F2F)" stroke-dasharray="8 4" />
+  <text x="30.0" y="45.0" font-size="24" font-weight="700">07C · 服务2目录接口与本地问数联调现状</text>
+  <rect x="32.0" y="155.0" width="196.0" height="108.0" rx="9" fill="#FFFFFF" stroke="#455A64" stroke-width="2" />
+  <text x="42.0" y="179.0" font-size="13" font-weight="700">1 请求目录</text>
+  <text x="42.0" y="198.0" font-size="13" font-weight="400">GET /api/sqlbot</text>
+  <text x="42.0" y="217.0" font-size="13" font-weight="400">/catalog</text>
+  <text x="42.0" y="236.0" font-size="13" font-weight="400">按 DW / DM / RPT</text>
+  <text x="42.0" y="255.0" font-size="13" font-weight="400">浏览</text>
+  <rect x="252.0" y="290.0" width="341.0" height="112.0" rx="9" fill="#E8F5E9" stroke="#2E7D32" stroke-width="2" />
+  <text x="262.0" y="314.0" font-size="13" font-weight="700">2 宿主身份与范围门禁</text>
+  <text x="262.0" y="333.0" font-size="13" font-weight="400">本机 mock 身份；仅映射 4/5/6</text>
+  <text x="262.0" y="352.0" font-size="13" font-weight="400">目录开关独立于动态问数</text>
+  <rect x="617.0" y="425.0" width="341.0" height="108.0" rx="9" fill="#E8F5E9" stroke="#2E7D32" stroke-width="2" />
+  <text x="627.0" y="449.0" font-size="13" font-weight="700">3 管理账号换取 Token</text>
+  <text x="627.0" y="468.0" font-size="13" font-weight="400">服务2 /mcp/access_token</text>
+  <text x="627.0" y="487.0" font-size="13" font-weight="400">仅服务端持有管理凭证</text>
+  <rect x="617.0" y="560.0" width="341.0" height="112.0" rx="9" fill="#E8F5E9" stroke="#2E7D32" stroke-width="2" />
+  <text x="627.0" y="584.0" font-size="13" font-weight="700">4 校验数据源映射</text>
+  <text x="627.0" y="603.0" font-size="13" font-weight="400">/datasource/list：ID 4/5/6</text>
+  <text x="627.0" y="622.0" font-size="13" font-weight="400">名称与 StarRocks 类型均匹配</text>
+  <rect x="982.0" y="695.0" width="311.0" height="108.0" rx="9" fill="#E8F5E9" stroke="#2E7D32" stroke-width="2" />
+  <text x="992.0" y="719.0" font-size="13" font-weight="700">5 连接检查</text>
+  <text x="992.0" y="738.0" font-size="13" font-weight="400">/datasource/check/{id}</text>
+  <text x="992.0" y="757.0" font-size="13" font-weight="400">DW / DM / RPT 均为 true</text>
+  <rect x="617.0" y="830.0" width="341.0" height="112.0" rx="9" fill="#E8F5E9" stroke="#2E7D32" stroke-width="2" />
+  <text x="627.0" y="854.0" font-size="13" font-weight="700">6 读取已选表与表备注</text>
+  <text x="627.0" y="873.0" font-size="13" font-weight="400">/datasource/tableList/{id}</text>
+  <text x="627.0" y="892.0" font-size="13" font-weight="400">DW 23 / DM 19 / RPT 8</text>
+  <rect x="617.0" y="965.0" width="341.0" height="112.0" rx="9" fill="#E8F5E9" stroke="#2E7D32" stroke-width="2" />
+  <text x="627.0" y="989.0" font-size="13" font-weight="700">7 读取字段与自定义备注</text>
+  <text x="627.0" y="1008.0" font-size="13" font-weight="400">/datasource/fieldList/{ds}/</text>
+  <text x="627.0" y="1027.0" font-size="13" font-weight="400">{table}</text>
+  <text x="627.0" y="1046.0" font-size="13" font-weight="400">共 3318 字段；3269 条非空备注</text>
+  <rect x="982.0" y="1100.0" width="311.0" height="116.0" rx="9" fill="#E8F5E9" stroke="#2E7D32" stroke-width="2" />
+  <text x="992.0" y="1124.0" font-size="13" font-weight="700">8 实时 Schema 对照</text>
+  <text x="992.0" y="1143.0" font-size="13" font-weight="400">/datasource/getFields/{ds</text>
+  <text x="992.0" y="1162.0" font-size="13" font-weight="400">}/{table}</text>
+  <text x="992.0" y="1181.0" font-size="13" font-weight="400">三组样表字段均匹配；巡检表 105/105</text>
+  <rect x="252.0" y="1240.0" width="341.0" height="116.0" rx="9" fill="#E8F5E9" stroke="#2E7D32" stroke-width="2" />
+  <text x="262.0" y="1264.0" font-size="13" font-weight="700">9 宿主合并并过滤</text>
+  <text x="262.0" y="1283.0" font-size="13" font-weight="400">只返回已选表/字段及备注</text>
+  <text x="262.0" y="1302.0" font-size="13" font-weight="400">不返回连接配置、密码或签名密钥</text>
+  <rect x="32.0" y="1380.0" width="196.0" height="118.0" rx="9" fill="#E8F5E9" stroke="#2E7D32" stroke-width="2" />
+  <text x="42.0" y="1404.0" font-size="13" font-weight="700">10 返回本地目录 API</text>
+  <text x="42.0" y="1423.0" font-size="13" font-weight="400">连接、表、字段、实时</text>
+  <text x="42.0" y="1442.0" font-size="13" font-weight="400">Schema</text>
+  <text x="42.0" y="1461.0" font-size="13" font-weight="400">50 表 / 3318</text>
+  <text x="42.0" y="1480.0" font-size="13" font-weight="400">字段逐项一致</text>
+  <rect x="1317.0" y="315.0" width="381.0" height="118.0" rx="9" fill="#FFF3E0" stroke="#EF6C00" stroke-width="2" />
+  <text x="1327.0" y="339.0" font-size="13" font-weight="700">L1 隔离宿主 + 本机 SQLBot</text>
+  <text x="1327.0" y="358.0" font-size="13" font-weight="400">Host :18765 ↔ SQLBot :8000</text>
+  <text x="1327.0" y="377.0" font-size="13" font-weight="400">以本机 SECRET_KEY 签 Assistant JWT</text>
+  <rect x="1317.0" y="515.0" width="381.0" height="118.0" rx="9" fill="#E8F5E9" stroke="#2E7D32" stroke-width="2" />
+  <text x="1327.0" y="539.0" font-size="13" font-weight="700">L2 07B Ticket 回调实测</text>
+  <text x="1327.0" y="558.0" font-size="13" font-weight="400">Certificate 仅携带本次 Ticket</text>
+  <text x="1327.0" y="577.0" font-size="13" font-weight="400">本机 SQLBot 回调宿主；计数 2 次</text>
+  <rect x="1317.0" y="715.0" width="381.0" height="118.0" rx="9" fill="#E8F5E9" stroke="#2E7D32" stroke-width="2" />
+  <text x="1327.0" y="739.0" font-size="13" font-weight="700">L3 单表真实问数成功</text>
+  <text x="1327.0" y="758.0" font-size="13" font-weight="400">巡检表 105 字段；生成 SELECT COUNT</text>
+  <text x="1327.0" y="777.0" font-size="13" font-weight="400">SQLBot Record + 1 行查询结果</text>
+  <rect x="1722.0" y="315.0" width="401.0" height="118.0" rx="9" fill="#FFF3E0" stroke="#EF6C00" stroke-width="2" />
+  <text x="1732.0" y="339.0" font-size="13" font-weight="700">R1 服务2高级小助手已创建</text>
+  <text x="1732.0" y="358.0" font-size="13" font-weight="400">zp-qwen3.8-max；实例密钥验签通过</text>
+  <text x="1732.0" y="377.0" font-size="13" font-weight="400">assistant/start 可创建 Chat</text>
+  <rect x="1722.0" y="515.0" width="401.0" height="118.0" rx="9" fill="#FFEBEE" stroke="#D32F2F" stroke-width="3" stroke-dasharray="8 4" />
+  <text x="1732.0" y="539.0" font-size="13" font-weight="700">R2 服务2反向回调超时</text>
+  <text x="1732.0" y="558.0" font-size="13" font-weight="400">→ 10.181.21.143:8766</text>
+  <text x="1732.0" y="577.0" font-size="13" font-weight="400">问数请求未取得动态数据源</text>
+  <rect x="1722.0" y="715.0" width="401.0" height="118.0" rx="9" fill="#FFF3E0" stroke="#EF6C00" stroke-width="2" />
+  <text x="1732.0" y="739.0" font-size="13" font-weight="700">R3 当前启用边界</text>
+  <text x="1732.0" y="758.0" font-size="13" font-weight="400">:8765 目录 API 已启用</text>
+  <text x="1732.0" y="777.0" font-size="13" font-weight="400">服务2高级小助手问数仍待回调通路</text>
+  <rect x="252.0" y="1650.0" width="1450.0" height="132.0" rx="9" fill="#FFF3E0" stroke="#EF6C00" stroke-width="2" />
+  <text x="262.0" y="1674.0" font-size="13" font-weight="700">当前验收结论</text>
+  <text x="262.0" y="1693.0" font-size="13" font-weight="400">服务2经接口提供连接状态、已选表、实时 Schema 与表/字段备注：50 表、3318 字段，和导入清单逐项一致。</text>
+  <text x="262.0" y="1712.0" font-size="13" font-weight="400">本机隔离链路已完成单表真实问数；服务2高级小助手的端到端问数仍被反向回调网络阻塞。</text>
+</svg>

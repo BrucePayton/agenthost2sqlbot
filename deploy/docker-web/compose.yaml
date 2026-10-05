@@ -1,0 +1,118 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: workspace
+      POSTGRES_USER: workspace
+      POSTGRES_PASSWORD: ${DOCKER_WEB_POSTGRES_PASSWORD:?set DOCKER_WEB_POSTGRES_PASSWORD}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U workspace -d workspace"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+
+  opensandbox-server:
+    image: opensandbox/server:v0.2.2
+    command: ["--config", "/etc/opensandbox/server.toml"]
+    env_file:
+      - ${DOCKER_WEB_OPENSANDBOX_ENV_FILE:?set DOCKER_WEB_OPENSANDBOX_ENV_FILE}
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ../opensandbox/server.toml:/etc/opensandbox/server.toml:ro
+      - opensandbox-state:/var/lib/opensandbox
+    privileged: false
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+    mem_limit: 1g
+    cpus: 1.0
+
+  api:
+    image: ${DOCKER_WEB_APP_IMAGE:?set DOCKER_WEB_APP_IMAGE}
+    command: ["python", "-m", "app.cli"]
+    env_file:
+      - ${DOCKER_WEB_API_ENV_FILE:?set DOCKER_WEB_API_ENV_FILE}
+    ports:
+      - 127.0.0.1:${DOCKER_WEB_PORT:-8765}:8000
+    volumes:
+      - app-data:/var/lib/workspace-agent
+    depends_on:
+      postgres:
+        condition: service_healthy
+    init: true
+    read_only: true
+    tmpfs:
+      - /tmp:size=128m,mode=1777
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health', timeout=2)"
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
+  worker:
+    image: ${DOCKER_WEB_APP_IMAGE:?set DOCKER_WEB_APP_IMAGE}
+    command: ["python", "-m", "app.sandbox.main"]
+    env_file:
+      - ${DOCKER_WEB_API_ENV_FILE:?set DOCKER_WEB_API_ENV_FILE}
+      - ${DOCKER_WEB_WORKER_ENV_FILE:?set DOCKER_WEB_WORKER_ENV_FILE}
+    volumes:
+      - app-data:/var/lib/workspace-agent
+    depends_on:
+      postgres:
+        condition: service_healthy
+      opensandbox-server:
+        condition: service_started
+    init: true
+    read_only: true
+    tmpfs:
+      - /tmp:size=128m,mode=1777
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+
+  migrate:
+    image: ${DOCKER_WEB_APP_IMAGE:?set DOCKER_WEB_APP_IMAGE}
+    command: ["python", "-m", "app.db.cli"]
+    env_file:
+      - ${DOCKER_WEB_API_ENV_FILE:?set DOCKER_WEB_API_ENV_FILE}
+    profiles:
+      - tools
+    depends_on:
+      postgres:
+        condition: service_healthy
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    restart: "no"
+
+volumes:
+  postgres-data:
+  opensandbox-state:
+  app-data:

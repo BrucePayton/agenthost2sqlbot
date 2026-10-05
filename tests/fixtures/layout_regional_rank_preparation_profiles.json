@@ -1,0 +1,456 @@
+{
+  "cases": {
+    "047": {
+      "3445": 0,
+      "3446": 0,
+      "3447": 0,
+      "3448": 0,
+      "3449": 0,
+      "3455": 0,
+      "3456": 0,
+      "3457": 0,
+      "3466": 0
+    },
+    "050": {
+      "3445": 0,
+      "3446": 0,
+      "3447": 0,
+      "3448": 0,
+      "3449": 0,
+      "3455": 0,
+      "3456": 0,
+      "3457": 0,
+      "3466": 0
+    },
+    "048": {
+      "3445": 0,
+      "3446": 0,
+      "3447": 0,
+      "3448": 0,
+      "3449": 0,
+      "3455": 0,
+      "3456": 0,
+      "3457": 0,
+      "3466": 0
+    }
+  },
+  "sources": {
+    "047": {
+      "sourceRevision": "30a4e676e053d1993a618681fc8728285e2baf2c",
+      "productionSourceHashes": {
+        "dashboardRemotePreparation.ts": "9f030e1154127cc5587f5b2784c6b0969161829df653fa3d8cc5f96f294b11f8",
+        "dashboardConstraintLayout.ts": "0b20e54b2619a58a4af44beb3f293bb883d41c5508964e282b9a5e79c7b66bf9",
+        "dashboardFallbackSizes.ts": "8a9af163d5069bfc01a4ed40afa41b795fdb00b5e6ee888b378d2f050084a84e",
+        "../../constants.ts": "b3efa54b37702c8a1e9128b2fbdf350675e314e2a09e0fb7d00c90f39d30527c"
+      },
+      "source": {
+        "layoutRunId": "f8fb05dd-504e-4c50-83e3-e4562cac32cc",
+        "sessionId": "d070d3ca-657b-4f67-99a9-453918c34c70",
+        "responseSha256": "5ecda64ff3a58511908f2f5160de7f851a5002ec5034882bad5b0c7d4ceb6e7b",
+        "diagnosticsStatus": "truncated",
+        "diagnosticsTruncated": true
+      },
+      "coverage": {
+        "totalLoggedNodes": 40,
+        "totalRankNodes": 9,
+        "regeneratedRankIds": [
+          "3445",
+          "3446",
+          "3447",
+          "3448",
+          "3449",
+          "3455",
+          "3456",
+          "3457",
+          "3466"
+        ]
+      },
+      "canvasWidth": 1284,
+      "canvasSource": "root rank preparation events scopeWidth",
+      "preset": {
+        "mode": "compact",
+        "sizing": "content"
+      },
+      "fullBusinessConfigRecovered": false,
+      "exportSha256": "a139f4019aa84690cdd764124f849118352fd814416f84712c6376bdb2f3533c",
+      "originals": {
+        "3445": {
+          "x": 0,
+          "y": 155,
+          "w": 6,
+          "h": 15
+        },
+        "3446": {
+          "x": 18,
+          "y": 110,
+          "w": 6,
+          "h": 15
+        },
+        "3447": {
+          "x": 12,
+          "y": 110,
+          "w": 6,
+          "h": 15
+        },
+        "3448": {
+          "x": 4,
+          "y": 0,
+          "w": 6,
+          "h": 15
+        },
+        "3449": {
+          "x": 0,
+          "y": 170,
+          "w": 6,
+          "h": 15
+        },
+        "3455": {
+          "x": 0,
+          "y": 215,
+          "w": 6,
+          "h": 15
+        },
+        "3456": {
+          "x": 6,
+          "y": 215,
+          "w": 6,
+          "h": 15
+        },
+        "3457": {
+          "x": 18,
+          "y": 155,
+          "w": 6,
+          "h": 15
+        },
+        "3466": {
+          "x": 18,
+          "y": 170,
+          "w": 6,
+          "h": 15
+        }
+      }
+    },
+    "050": {
+      "sourceRevision": "30a4e676e053d1993a618681fc8728285e2baf2c",
+      "productionSourceHashes": {
+        "dashboardRemotePreparation.ts": "9f030e1154127cc5587f5b2784c6b0969161829df653fa3d8cc5f96f294b11f8",
+        "dashboardConstraintLayout.ts": "0b20e54b2619a58a4af44beb3f293bb883d41c5508964e282b9a5e79c7b66bf9",
+        "dashboardFallbackSizes.ts": "8a9af163d5069bfc01a4ed40afa41b795fdb00b5e6ee888b378d2f050084a84e",
+        "../../constants.ts": "b3efa54b37702c8a1e9128b2fbdf350675e314e2a09e0fb7d00c90f39d30527c"
+      },
+      "source": {
+        "layoutRunId": "592332e1-390d-4486-adbd-a79362b624cf",
+        "sessionId": "ae87de2e-f13c-4af8-97a2-0bed7987d5e6",
+        "responseSha256": "c090cdbde22bbd6b86eff35eb729a39630cada7c710fe65f7b8be66800d7c480",
+        "diagnosticsStatus": "truncated",
+        "diagnosticsTruncated": true
+      },
+      "coverage": {
+        "totalLoggedNodes": 40,
+        "totalRankNodes": 9,
+        "regeneratedRankIds": [
+          "3445",
+          "3446",
+          "3447",
+          "3448",
+          "3449",
+          "3455",
+          "3456",
+          "3457",
+          "3466"
+        ]
+      },
+      "canvasWidth": 1284,
+      "canvasSource": "root rank preparation events scopeWidth",
+      "preset": {
+        "mode": "compact",
+        "sizing": "content"
+      },
+      "fullBusinessConfigRecovered": false,
+      "exportSha256": "2dd0d223e11bc4038f42b67f4eaf857aef3176c9e325b648bdcd8cd1927cd6c8",
+      "originals": {
+        "3445": {
+          "x": 0,
+          "y": 119,
+          "w": 6,
+          "h": 15
+        },
+        "3446": {
+          "x": 0,
+          "y": 4,
+          "w": 6,
+          "h": 15
+        },
+        "3447": {
+          "x": 0,
+          "y": 134,
+          "w": 6,
+          "h": 15
+        },
+        "3448": {
+          "x": 0,
+          "y": 149,
+          "w": 6,
+          "h": 15
+        },
+        "3449": {
+          "x": 6,
+          "y": 132,
+          "w": 6,
+          "h": 15
+        },
+        "3455": {
+          "x": 12,
+          "y": 170,
+          "w": 6,
+          "h": 15
+        },
+        "3456": {
+          "x": 18,
+          "y": 170,
+          "w": 6,
+          "h": 15
+        },
+        "3457": {
+          "x": 0,
+          "y": 188,
+          "w": 6,
+          "h": 13
+        },
+        "3466": {
+          "x": 18,
+          "y": 213,
+          "w": 6,
+          "h": 15
+        }
+      }
+    },
+    "048": {
+      "sourceRevision": "30a4e676e053d1993a618681fc8728285e2baf2c",
+      "productionSourceHashes": {
+        "dashboardRemotePreparation.ts": "9f030e1154127cc5587f5b2784c6b0969161829df653fa3d8cc5f96f294b11f8",
+        "dashboardConstraintLayout.ts": "0b20e54b2619a58a4af44beb3f293bb883d41c5508964e282b9a5e79c7b66bf9",
+        "dashboardFallbackSizes.ts": "8a9af163d5069bfc01a4ed40afa41b795fdb00b5e6ee888b378d2f050084a84e",
+        "../../constants.ts": "b3efa54b37702c8a1e9128b2fbdf350675e314e2a09e0fb7d00c90f39d30527c"
+      },
+      "source": {
+        "layoutRunId": "e3d32249-0097-4e85-8726-74e3ee08762a",
+        "sessionId": "552b7127-c343-4c21-b32f-99ada6dc2486",
+        "responseSha256": "e09e15b5616f68d8ea717f2fbbe10eb257d646219a72bb566e82852c66dbda72",
+        "diagnosticsStatus": "truncated",
+        "diagnosticsTruncated": true
+      },
+      "coverage": {
+        "totalLoggedNodes": 40,
+        "totalRankNodes": 9,
+        "regeneratedRankIds": [
+          "3445",
+          "3446",
+          "3447",
+          "3448",
+          "3449",
+          "3455",
+          "3456",
+          "3457",
+          "3466"
+        ]
+      },
+      "canvasWidth": 1284,
+      "canvasSource": "root rank preparation events scopeWidth",
+      "preset": {
+        "mode": "compact",
+        "sizing": "content"
+      },
+      "fullBusinessConfigRecovered": false,
+      "exportSha256": "e7250adf9a6dc6765f8b1ee73719ac5b66af7c24de020f971624afc25603f399",
+      "originals": {
+        "3445": {
+          "x": 0,
+          "y": 99,
+          "w": 6,
+          "h": 15
+        },
+        "3446": {
+          "x": 6,
+          "y": 99,
+          "w": 6,
+          "h": 15
+        },
+        "3447": {
+          "x": 0,
+          "y": 114,
+          "w": 6,
+          "h": 15
+        },
+        "3448": {
+          "x": 0,
+          "y": 129,
+          "w": 6,
+          "h": 15
+        },
+        "3449": {
+          "x": 6,
+          "y": 114,
+          "w": 6,
+          "h": 15
+        },
+        "3455": {
+          "x": 0,
+          "y": 176,
+          "w": 6,
+          "h": 15
+        },
+        "3456": {
+          "x": 6,
+          "y": 176,
+          "w": 6,
+          "h": 15
+        },
+        "3457": {
+          "x": 0,
+          "y": 191,
+          "w": 6,
+          "h": 15
+        },
+        "3466": {
+          "x": 0,
+          "y": 234,
+          "w": 6,
+          "h": 15
+        }
+      }
+    }
+  },
+  "shapeSets": [
+    [
+      [
+        6,
+        15,
+        0,
+        0,
+        0
+      ],
+      [
+        6,
+        16,
+        1,
+        0,
+        0
+      ],
+      [
+        6,
+        17,
+        2,
+        0,
+        0
+      ],
+      [
+        6,
+        18,
+        3,
+        0,
+        0
+      ],
+      [
+        6,
+        19,
+        4,
+        0,
+        0
+      ],
+      [
+        6,
+        20,
+        5,
+        0,
+        0
+      ],
+      [
+        7,
+        15,
+        10,
+        0,
+        0
+      ],
+      [
+        7,
+        16,
+        11,
+        0,
+        0
+      ],
+      [
+        7,
+        17,
+        12,
+        0,
+        0
+      ],
+      [
+        7,
+        18,
+        13,
+        0,
+        0
+      ],
+      [
+        7,
+        19,
+        14,
+        0,
+        0
+      ],
+      [
+        7,
+        20,
+        15,
+        0,
+        0
+      ],
+      [
+        8,
+        15,
+        20,
+        0,
+        0
+      ],
+      [
+        8,
+        16,
+        21,
+        0,
+        0
+      ],
+      [
+        8,
+        17,
+        22,
+        0,
+        0
+      ],
+      [
+        8,
+        18,
+        23,
+        0,
+        0
+      ],
+      [
+        8,
+        19,
+        24,
+        0,
+        0
+      ],
+      [
+        8,
+        20,
+        25,
+        0,
+        0
+      ]
+    ]
+  ],
+  "liveDomMeasured": false,
+  "evidenceType": "current_production_rank_fallback_from_remote_preparation_original_geometry"
+}

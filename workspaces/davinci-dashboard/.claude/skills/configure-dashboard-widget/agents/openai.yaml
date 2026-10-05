@@ -1,0 +1,4 @@
+interface:
+  display_name: "Davinci 仪表盘组件配置"
+  short_description: "在 Davinci 中检索字段并一步创建或配置仪表盘组件"
+  default_prompt: "Use $configure-dashboard-widget to create and verify the requested Davinci dashboard widget."

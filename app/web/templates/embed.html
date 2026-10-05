@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ app_name }}</title>
+  <link rel="stylesheet" href="/static/embed.css?v={{ asset_revision }}">
+</head>
+<body{% if security_marker %} data-security-marker="{{ security_marker }}"{% endif %}>
+  <main class="assistant-panel" id="assistantPanel" data-size="small" aria-label="数巢智能体">
+    <div class="assistant-head">
+      <div class="assistant-title">
+        <h2>
+          <span class="sprout-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M12 20v-8m0 2c-4.6 0-7.3-2.2-7.7-6.7 4.6-.4 7.3 1.8 7.7 6.7Zm0-2c.4-4.5 3.1-6.7 7.7-6.7-.4 4.5-3.1 6.7-7.7 6.7Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+          </span>
+          数巢智能体
+        </h2>
+        <div class="assistant-head-actions">
+          <button class="new-conversation-btn" id="agentNewSessionButton" type="button" aria-label="新对话" title="新对话">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M14.5 18H8l-4.5 3 1.2-5A8 8 0 1 1 19.6 9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path>
+              <path d="M19 13v6m-3-3h6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"></path>
+            </svg>
+          </button>
+          <div class="head-menu">
+            <button class="head-icon-btn" id="headerTaskHistory" type="button" aria-label="任务历史" title="任务历史" aria-expanded="false">
+              <svg width="17" height="17" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                <path d="M4.8 6.1H2.5V3.8M3 5.4A7 7 0 1 1 3.6 14M10 6v4l2.8 1.7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+              </svg>
+            </button>
+            <div class="head-popover" id="historyPopover" hidden>
+              <div class="head-popover-title">最近会话</div>
+              <div class="head-popover-list" id="historyList"></div>
+              <div class="head-popover-empty" id="historyEmpty" hidden>暂无历史会话</div>
+              <div class="head-popover-foot" id="agentSessionIdentity" hidden>
+                <code id="agentSessionId"></code>
+                <button id="agentCopySessionIdButton" class="agent-copy-session" type="button">复制</button>
+              </div>
+            </div>
+          </div>
+          <button class="head-icon-btn" id="agentSkillsButton" type="button" aria-label="管理个人 Workspace Skills" title="Skill 管理" hidden disabled>
+            <svg width="17" height="17" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <path d="M10 2.6 3.2 6v8L10 17.4 16.8 14V6L10 2.6Zm0 0v14.8M3.2 6 10 9.4 16.8 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+            <span class="skill-count-badge" id="agentSkillCount">0</span>
+          </button>
+          <div class="size-menu" id="sizeMenu" hidden>
+            <button class="size-menu-trigger" id="sizeMenuTrigger" type="button" aria-haspopup="menu" aria-expanded="false">
+              <span id="currentSizeLabel">小</span>
+              <svg class="size-chevron" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d="m4 6 4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+              </svg>
+            </button>
+            <div class="size-menu-popover" id="sizeMenuPopover" role="menu" aria-label="窗口大小" hidden>
+              <button data-size-option="small" role="menuitem" class="active">小窗口</button>
+              <button data-size-option="medium" role="menuitem">中窗口</button>
+              <button data-size-option="large" role="menuitem">大窗口</button>
+              <button data-size-option="fullscreen" role="menuitem">全屏</button>
+            </div>
+          </div>
+          <button id="closeAssistant" type="button" aria-label="关闭" title="关闭" hidden>×</button>
+        </div>
+      </div>
+    </div>
+
+    <aside class="agent-rail" id="agentRail" aria-label="最近会话">
+      <div class="rail-label">最近会话</div>
+      <div class="rail-task-list" id="railTaskList"></div>
+      <div class="rail-empty" id="railEmpty" hidden>暂无历史会话</div>
+    </aside>
+
+    <div class="assistant-body" id="assistantBody">
+      <div class="compact-context-bar" id="compactContextBar" aria-live="polite" hidden>
+        <i class="compact-context-dot" aria-hidden="true"></i>
+        <span>当前上下文</span>
+        <strong id="compactContextArea">个人空间</strong>
+        <span class="compact-context-sep" id="compactContextSep">/</span>
+        <strong id="compactContextName"></strong>
+      </div>
+      <div class="agent-status" id="agentStatus" role="status" aria-live="polite">等待宿主页面</div>
+      <div class="agent-recovery" id="agentRecovery" hidden>
+        <button type="button" id="agentReauthenticate" hidden>重新认证</button>
+        <button type="button" id="agentCheckRun" hidden>检查执行状态</button>
+      </div>
+
+      <div class="idle-view" id="idleView">
+        <div class="idle-landing">
+          <div class="welcome-block">
+            <strong>你好，今天能帮你做什么？以下是我的主要能力：</strong>
+          </div>
+
+          <section class="ability-overview" aria-label="主要能力">
+            <div>
+              <ul class="ability-cluster-list">
+                <li><button class="ability-cluster" data-ability="find" type="button"><strong>查找数据</strong></button></li>
+                <li><button class="ability-cluster" data-ability="explain" type="button"><strong>问数解释</strong></button></li>
+                <li><button class="ability-cluster" data-ability="analysis" type="button"><strong>分析诊断</strong></button></li>
+                <li><button class="ability-cluster" data-ability="dashboard" type="button"><strong>搭建看板</strong></button></li>
+                <li><button class="ability-cluster" data-ability="dataset" type="button"><strong>查找数据集</strong></button></li>
+                <li><button class="ability-cluster" data-ability="subscribe" type="button"><strong>订阅预警</strong></button></li>
+                <li><button class="ability-cluster" data-ability="space" type="button"><strong>协同空间</strong></button></li>
+                <li><button class="ability-cluster" data-ability="dispatch" type="button"><strong>任务派发</strong></button></li>
+              </ul>
+              <div class="ability-detail" id="abilityDetail" aria-live="polite" hidden>
+                <div class="ability-detail-head">
+                  <h3 id="abilityDetailTitle"></h3>
+                  <span class="ability-detail-tag" id="abilityDetailTag"></span>
+                </div>
+                <p id="abilityDetailDesc"></p>
+                <div class="ability-detail-grid">
+                  <div><span>可做事项</span><strong id="abilityDetailScope"></strong></div>
+                  <div><span>示例委托</span><strong id="abilityDetailExample"></strong></div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="context-suggestion-card" id="contextSuggestionCard" aria-live="polite" hidden>
+            <div class="context-summary">
+              <span class="context-check">✓</span>
+              <p>已识别当前页面：<strong>“<span id="sessionContextName"></span>”</strong><span id="contextSuggestionHint"></span></p>
+            </div>
+            <div>
+              <div class="idle-section-label">猜你想问</div>
+              <div class="suggested-question-list" id="suggestedQuestionList"></div>
+            </div>
+          </section>
+        </div>
+      </div>
+
+      <div class="task-view" id="taskView" hidden>
+        <section id="agentTimeline" class="agent-timeline" aria-label="对话记录"></section>
+      </div>
+
+      <div class="capability-drawer" id="capabilityDrawer" hidden>
+        <div class="drawer-head">
+          <div><h3>全部能力</h3><p>选择一个方向，继续描述具体目标</p></div>
+          <button class="drawer-close" id="closeCapabilityDrawer" type="button" aria-label="关闭全部能力">×</button>
+        </div>
+        <div class="capability-grid">
+          <button class="capability" type="button" data-prompt="帮我找到华东回收转化相关数据，并查询本周核心指标"><b>数据获取</b><span>查报表、数据集、指标和口径</span></button>
+          <button class="capability" type="button" data-prompt="分析华东订单本周下降原因，并给出关注风险"><b>分析诊断</b><span>趋势、异常、下钻和原因归因</span></button>
+          <button class="capability" type="button" data-prompt="基于回收订单数据集搭建分析看板并生成日报"><b>内容搭建</b><span>仪表盘、数据集和分析报告</span></button>
+          <button class="capability" type="button" data-prompt="查找华东回收订单从提交到成交的转化指标数据集"><b>查找数据集</b><span>业务指标澄清、候选筛选与宽表关联</span></button>
+          <button class="capability" type="button" data-prompt="为成交订单配置日报订阅和异常下降预警"><b>自动化运营</b><span>订阅、预警、推送和定时任务</span></button>
+          <button class="capability" type="button" data-prompt="创建华东战区协同空间，放入日报并配置成员"><b>协同空间</b><span>空间、成员、资产托管和交付流</span></button>
+          <button class="capability" type="button" data-prompt="把当前异常分析派发给华东负责人，并附上数据依据和截止时间"><b>任务派发</b><span>负责人、动作项、截止时间和跟进记录</span></button>
+          <button class="capability" type="button" data-prompt="检查当前报表、推送和协同空间的权限风险"><b>权限治理</b><span>权限申请、行权限和外发风险</span></button>
+        </div>
+      </div>
+    </div>
+
+    <aside class="agent-inspector" id="agentInspector" aria-label="数巢智能体能力">
+      <div class="inspector-heading"><h3>数巢智能体能力</h3><span>8 项</span></div>
+      <p class="inspector-intro">点击示例可填入输入框，再由你确认发送。</p>
+      <div class="inspector-ability-list">
+        <button class="inspector-ability" type="button" data-inspector-prompt="查找华东回收转化相关报表"><b>查找数据</b><span>定位报表、数据集、指标与负责人</span><small>例：查找华东回收转化相关报表</small></button>
+        <button class="inspector-ability" type="button" data-inspector-prompt="解释成交订单量的指标口径"><b>问数解释</b><span>说明指标定义、统计口径、业务归属和所在报表</span><small>例：解释成交订单量的指标口径</small></button>
+        <button class="inspector-ability" type="button" data-inspector-prompt="分析当前看板销售额下降的原因"><b>分析诊断</b><span>做趋势、异常、下钻、归因与风险判断</span><small>例：分析当前看板销售额下降的原因</small></button>
+        <button class="inspector-ability" type="button" data-inspector-prompt="基于回收订单数据集搭建日报看板"><b>搭建看板</b><span>生成组件、筛选、联动和 AI 解读草稿</span><small>例：基于回收订单数据集搭建日报看板</small></button>
+        <button class="inspector-ability" type="button" data-inspector-prompt="查找华东回收订单从提交到成交的转化指标数据集"><b>查找数据集</b><span>澄清业务指标、筛选候选数据集并承接宽表关联</span><small>例：查找华东回收订单从提交到成交的转化指标数据集</small></button>
+        <button class="inspector-ability" type="button" data-inspector-prompt="配置成交订单日报，每天 9:00 推送"><b>订阅预警</b><span>配置频率、阈值、发送内容和收件人</span><small>例：配置成交订单日报，每天 9:00 推送</small></button>
+        <button class="inspector-ability" type="button" data-inspector-prompt="创建华东战区协同空间"><b>协同空间</b><span>创建空间并配置成员、知识库和资产</span><small>例：创建华东战区协同空间</small></button>
+        <button class="inspector-ability" type="button" data-inspector-prompt="把异常分析派发给华东负责人"><b>任务派发</b><span>带上数据依据，设置负责人和截止时间</span><small>例：把异常分析派发给华东负责人</small></button>
+      </div>
+      <div class="inspector-runtime-values" aria-live="polite">
+        <span id="inspectorContext">—</span>
+        <span id="inspectorNav">—</span>
+        <span id="inspectorObject">等待委托</span>
+        <span id="inspectorStatus">尚未执行</span>
+      </div>
+    </aside>
+
+    <div class="assistant-foot">
+      <form class="composer" id="agentComposer">
+        <label class="sr-only" for="agentMessageInput">消息</label>
+        <div class="composer-input-area">
+          <textarea id="agentMessageInput" placeholder="描述你想完成的事" required></textarea>
+        </div>
+        <div class="composer-meta">
+          <button class="composer-model-trigger" id="composerModelTrigger" type="button" aria-haspopup="menu" aria-expanded="false" hidden>
+            <svg width="15" height="15" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <path d="M10.8 1.8 3.4 10.6c-.4.5-.1 1.2.6 1.2h4.1l-1 5.5c-.1.8.9 1.2 1.4.6l7.6-9.2c.4-.5 0-1.2-.6-1.2h-4.2l1-5.2c.2-.8-.8-1.3-1.5-.5Z"></path>
+            </svg>
+            <span id="composerModelLabel"></span>
+            <span class="reasoning-label" id="composerReasoningLabel">中</span>
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="m4 6 4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+          </button>
+          <div class="composer-model-popover" id="composerModelPopover" role="menu" hidden>
+            <div class="quick-menu-panel">
+              <button class="quick-menu-row active" data-quick-menu="model" type="button">
+                <b>模型</b><span><em id="quickModelValue"></em><svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="m6 4 4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+              </button>
+              <button class="quick-menu-row" data-quick-menu="reasoning" type="button">
+                <b>推理强度</b><span><em id="quickReasoningValue">中</em><svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="m6 4 4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+              </button>
+            </div>
+            <div class="quick-submenu" data-submenu="model" id="quickModelSubmenu"></div>
+            <div class="quick-submenu" data-submenu="reasoning" id="quickReasoningSubmenu" hidden></div>
+          </div>
+        </div>
+        <div class="agent-run-options" id="agentRunOptions" hidden>
+          <label class="sr-only" for="agentModelSelect">模型</label>
+          <select id="agentModelSelect" aria-label="模型" tabindex="-1"></select>
+          <label class="sr-only" for="agentEffortSelect">思考强度</label>
+          <select id="agentEffortSelect" aria-label="思考强度" tabindex="-1">
+            <option value="low">低</option>
+            <option value="medium">中</option>
+            <option value="high">高</option>
+            <option value="xhigh">极高</option>
+            <option value="max">最大</option>
+          </select>
+        </div>
+        <button class="composer-resize-handle" id="composerResizeHandle" type="button" aria-label="调整输入框高度" title="上下拖动调整输入框高度">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+            <path d="M5.5 10.5 10.5 5.5M8.5 10.5l2-2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"></path>
+          </svg>
+        </button>
+        <button class="interrupt-btn" id="agentStopButton" type="button" aria-label="中断当前操作" title="停止后不回滚已完成的写操作，只停止后续步骤。" hidden>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <rect x="7" y="7" width="10" height="10" rx="1.8" fill="currentColor"></rect>
+          </svg>
+        </button>
+        <button class="send-btn" id="agentSendButton" type="submit" aria-label="发送">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M4 12 20 4l-4 16-4-6-8-2Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"></path>
+          </svg>
+        </button>
+      </form>
+    </div>
+  </main>
+
+  <section id="skillManagementView" class="skill-management-view" aria-labelledby="skillManagementTitle" hidden>
+    <header class="skill-management-header">
+      <button id="skillManagementBackButton" class="button secondary" type="button">← 返回会话</button>
+      <div>
+        <span id="skillManagementWorkspaceName" class="section-label">Workspace</span>
+        <h1 id="skillManagementTitle">Skill 管理</h1>
+      </div>
+      <p id="skillChangesNotice" class="skill-changes-notice" role="status" aria-live="polite" hidden>仅对新会话生效</p>
+    </header>
+    <div class="skill-management-body">
+      <div class="skill-catalog-sections">
+        <section id="globalSkillSection" class="skill-catalog-section" aria-labelledby="globalSkillTitle">
+          <header class="skill-catalog-header">
+            <div><h2 id="globalSkillTitle">全局 Skill</h2><p>团队共享，所有用户可上传；开关仅影响之后的新会话</p></div>
+            <div id="globalSkillImportRoot" class="skill-import-actions" hidden>
+              <button id="globalSkillImportButton" class="button secondary" type="button">导入文件夹</button>
+              <button id="globalSkillArchiveButton" class="button secondary" type="button">导入 .skill / ZIP</button>
+            </div>
+          </header>
+          <label class="sr-only" for="globalSkillDirectoryInput">导入全局 Skill 文件夹</label>
+          <input id="globalSkillDirectoryInput" type="file" webkitdirectory multiple hidden>
+          <label class="sr-only" for="globalSkillArchiveInput">导入全局 Skill 压缩包</label>
+          <input id="globalSkillArchiveInput" type="file" accept=".zip,.skill,application/zip" hidden>
+          <div id="globalSkillLoading" class="skill-manager-message" role="status" hidden>正在加载全局 Skills…</div>
+          <div id="globalSkillList" class="skill-manager-list" role="list"></div>
+          <div id="globalSkillEmpty" class="skill-manager-message" hidden>暂无全局 Skill</div>
+        </section>
+        <section id="personalSkillSection" class="skill-catalog-section" aria-labelledby="personalSkillTitle">
+          <header class="skill-catalog-header">
+            <div><h2 id="personalSkillTitle">个人 Skill</h2><p>仅属于当前个人 Workspace</p></div>
+            <div id="personalSkillImportRoot" class="skill-import-actions">
+              <button id="personalSkillImportButton" class="button secondary" type="button">导入文件夹</button>
+              <button id="personalSkillArchiveButton" class="button secondary" type="button">导入 .skill / ZIP</button>
+            </div>
+          </header>
+          <label class="sr-only" for="personalSkillDirectoryInput">导入个人 Skill 文件夹</label>
+          <input id="personalSkillDirectoryInput" type="file" webkitdirectory multiple hidden>
+          <label class="sr-only" for="personalSkillArchiveInput">导入个人 Skill 压缩包</label>
+          <input id="personalSkillArchiveInput" type="file" accept=".zip,.skill,application/zip" hidden>
+          <div id="personalSkillLoading" class="skill-manager-message" role="status" hidden>正在加载个人 Skills…</div>
+          <div id="personalSkillList" class="skill-manager-list" role="list"></div>
+          <div id="personalSkillEmpty" class="skill-manager-message" hidden>暂无个人 Skill</div>
+        </section>
+        <section id="workspaceInstructionsSection" class="skill-catalog-section" aria-labelledby="workspaceInstructionsTitle">
+          <header class="skill-catalog-header">
+            <div><h2 id="workspaceInstructionsTitle">工作区指令</h2><p>你自己的 CLAUDE.md；保存后对之后的新会话生效</p></div>
+            <div class="skill-import-actions">
+              <button id="workspaceInstructionsReset" class="button secondary" type="button">还原默认</button>
+              <button id="workspaceInstructionsSave" class="button" type="button">保存</button>
+            </div>
+          </header>
+          <div id="workspaceInstructionsLoading" class="skill-manager-message" role="status" hidden>正在加载工作区指令…</div>
+          <label class="sr-only" for="workspaceInstructionsEditor">工作区指令内容</label>
+          <textarea id="workspaceInstructionsEditor" class="skill-instructions-editor" rows="20" spellcheck="false"></textarea>
+          <div id="workspaceInstructionsStatus" class="skill-manager-message" role="status"></div>
+        </section>
+      </div>
+      <aside id="skillDetailPanel" class="skill-detail-panel" aria-labelledby="skillDetailName" hidden>
+        <header><span class="section-label">只读详情</span><h2 id="skillDetailName">选择一个 Skill</h2><p id="skillDetailDescription"></p></header>
+        <dl class="skill-detail-metadata">
+          <div><dt>版本</dt><dd id="skillDetailVersion"></dd></div>
+          <div><dt>Hash</dt><dd><code id="skillDetailHash"></code></dd></div>
+          <div><dt>来源</dt><dd id="skillDetailSource"></dd></div>
+          <div><dt>更新时间</dt><dd id="skillDetailUpdatedAt"></dd></div>
+        </dl>
+        <div class="skill-detail-content"><strong>SKILL.md</strong><pre id="skillDetailContent"></pre></div>
+        <div class="skill-detail-manifest"><strong>文件 Manifest</strong><ul id="skillDetailManifest"></ul></div>
+      </aside>
+    </div>
+  </section>
+
+  <dialog id="skillImportConflictDialog" class="skill-import-conflict-dialog" aria-labelledby="skillImportConflictTitle">
+    <div class="skill-import-conflict-shell">
+      <div class="dialog-header"><div><span class="section-label">导入冲突</span><h2 id="skillImportConflictTitle">已有同名 Skill</h2></div></div>
+      <p>请选择覆盖现有 Skill，或用新名称另存一份。上传文件只会临时保留在当前浏览器页面中。</p>
+      <dl class="skill-import-conflict-details">
+        <div><dt>Skill</dt><dd id="skillImportConflictName"></dd></div>
+        <div><dt>现有版本</dt><dd><code id="skillImportConflictExistingHash"></code></dd></div>
+        <div><dt>导入版本</dt><dd><code id="skillImportConflictIncomingHash"></code></dd></div>
+      </dl>
+      <label for="skillImportRenameInput">新 Skill 名称</label>
+      <input id="skillImportRenameInput" type="text" maxlength="128" autocomplete="off" placeholder="例如 brainstorming-copy">
+      <p id="skillImportConflictError" class="skill-manager-conflict" role="alert" hidden></p>
+      <div class="dialog-actions skill-import-conflict-actions">
+        <button id="skillImportCancelButton" class="button secondary" type="button">取消</button>
+        <button id="skillImportOverwriteButton" class="button danger" type="button">覆盖现有 Skill</button>
+        <button id="skillImportRenameButton" class="button primary" type="button">重命名导入</button>
+      </div>
+    </div>
+  </dialog>
+  {% if embed_config %}
+  <script id="davinciEmbedConfig" type="application/json">{{ embed_config | tojson }}</script>
+  {% endif %}
+  <script src="/static/skill-manager.js?v={{ asset_revision }}"></script>
+  <script type="module" src="/static/embed.js?v={{ asset_revision }}"></script>
+</body>
+</html>

@@ -1,0 +1,121 @@
+version: 1
+id: example
+name: Example Workspace
+description: A local workspace for validating persistent chat and Skills.
+skills_root_env: CLAUDE_SKILLS_ROOT
+skills:
+  - autoplan
+  - benchmark
+  - benchmark-models
+  - brainstorming
+  - browse
+  - canary
+  - careful
+  - codex
+  - connect-chrome
+  - context-restore
+  - context-save
+  - cso
+  - derived-metric-candidate-gen
+  - design-consultation
+  - design-html
+  - design-review
+  - design-shotgun
+  - devex-review
+  - document-release
+  - freeze
+  - graphify
+  - gstack
+  - gstack-upgrade
+  - guard
+  - health
+  - investigate
+  - land-and-deploy
+  - landing-report
+  - lark-approval
+  - lark-apps
+  - lark-attendance
+  - lark-base
+  - lark-calendar
+  - lark-contact
+  - lark-doc
+  - lark-drive
+  - lark-event
+  - lark-im
+  - lark-mail
+  - lark-markdown
+  - lark-minutes
+  - lark-okr
+  - lark-openapi-explorer
+  - lark-shared
+  - lark-sheets
+  - lark-skill-maker
+  - lark-slides
+  - lark-task
+  - lark-vc
+  - lark-vc-agent
+  - lark-whiteboard
+  - lark-wiki
+  - lark-workflow-meeting-summary
+  - lark-workflow-standup-report
+  - learn
+  - make-pdf
+  - office-hours
+  - open-gstack-browser
+  - pair-agent
+  - plan-ceo-review
+  - plan-design-review
+  - plan-devex-review
+  - plan-eng-review
+  - plan-tune
+  - prompt-rewriter
+  - qa
+  - qa-only
+  - retro
+  - review
+  - scrape
+  - setup-browser-cookies
+  - setup-deploy
+  - setup-gbrain
+  - ship
+  - skillify
+  - sync-gbrain
+  - unfreeze
+allowed_tools:
+  - Read
+  - Write
+  - Edit
+  - NotebookEdit
+  - Glob
+  - Grep
+  - Bash
+  - WebSearch
+  - WebFetch
+  - Skill
+  - TaskCreate
+  - TaskUpdate
+  - TaskGet
+  - TaskList
+  - ListMcpResourcesTool
+  - mcp__codexSecurity__*
+  - mcp__dataAnalyticsWidgets__*
+  - mcp__ahs_hive_query__*
+mcp_servers:
+  codexSecurity:
+    type: stdio
+    command: node
+    entrypoint_env: CODEX_SECURITY_MCP_ENTRYPOINT
+    args:
+      - --stdio
+    env_vars:
+      - CODEX_HOME
+  dataAnalyticsWidgets:
+    type: stdio
+    command: node
+    entrypoint_env: DATA_ANALYTICS_MCP_ENTRYPOINT
+    args:
+      - --stdio
+  ahs_hive_query:
+    type: stdio
+    command: /Users/a110356/miniconda3/bin/python
+    entrypoint_env: AHS_HIVE_QUERY_MCP_ENTRYPOINT

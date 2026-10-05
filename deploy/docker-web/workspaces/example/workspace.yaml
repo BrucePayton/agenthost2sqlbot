@@ -1,0 +1,14 @@
+version: 1
+id: example
+name: Example Workspace
+description: A minimal container-safe Workspace for Docker Web validation.
+skills: []
+allowed_tools:
+  - Read
+  - Write
+  - Edit
+  - Glob
+  - Grep
+  - Bash
+  - Skill
+mcp_servers: {}

@@ -1,0 +1,26 @@
+FROM python:3.12.10-slim-bookworm@sha256:fd95fa221297a88e1cf49c55ec1828edd7c5a428187e67b5d1805692d11588db
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    UV_PROJECT_ENVIRONMENT=/app/.venv \
+    PYTHONPATH=/app \
+    PATH=/app/.venv/bin:$PATH
+
+RUN python -m pip install --no-cache-dir uv==0.7.6 \
+    && groupadd --gid 10001 runner \
+    && useradd --uid 10001 --gid 10001 --no-create-home --shell /usr/sbin/nologin runner
+
+WORKDIR /app
+COPY pyproject.toml uv.lock README.md /app/
+RUN --mount=type=cache,id=workspace-agent-uv,target=/root/.cache/uv \
+    uv sync --frozen --no-dev --no-install-project
+
+COPY app /app/app
+COPY contracts /app/contracts
+RUN --mount=type=cache,id=workspace-agent-uv,target=/root/.cache/uv \
+    uv sync --frozen --no-dev --no-editable
+RUN mkdir -p /session/workspace /session/claude-config /session/control /session/outputs /memory \
+    && chown -R 10001:10001 /app /session /memory
+
+USER 10001:10001
+CMD ["python", "-m", "app.runner.main", "--help"]

@@ -1,0 +1,96 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1590" height="1869" viewBox="0 0 1590 1869">
+  <rect width="1590" height="1869" fill="#FFFFFF" />
+  <style>text{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif;fill:#263238}.arrow{fill:none;marker-end:url(#a)}</style>
+  <defs>
+    <marker id="a" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 z" fill="#455A64" />
+    </marker>
+  </defs>
+  <text x="24" y="30" font-size="20" font-weight="700">07A · 创建、发布与开启实施路线</text>
+  <text x="24" y="52" font-size="12">创建不经过 Agent Host；开启对话时才创建 Host Session</text>
+  <rect x="16.4" y="57.4" width="205.0" height="1763.0" fill="#FAFAFA" stroke="#B0BEC5" />
+  <rect x="16.4" y="57.4" width="205.0" height="34.44" fill="#ECEFF1" stroke="#B0BEC5" />
+  <text x="24.4" y="79.53999999999999" font-size="11" font-weight="700">用户 / 前端</text>
+  <rect x="221.39999999999998" y="57.4" width="303.4" height="1763.0" fill="#FAFAFA" stroke="#B0BEC5" />
+  <rect x="221.39999999999998" y="57.4" width="303.4" height="34.44" fill="#ECEFF1" stroke="#B0BEC5" />
+  <text x="229.39999999999998" y="79.53999999999999" font-size="11" font-weight="700">逻辑 Data MCP / Data Agent</text>
+  <rect x="524.8" y="57.4" width="270.59999999999997" height="1763.0" fill="#FAFAFA" stroke="#B0BEC5" />
+  <rect x="524.8" y="57.4" width="270.59999999999997" height="34.44" fill="#ECEFF1" stroke="#B0BEC5" />
+  <text x="532.8" y="79.53999999999999" font-size="11" font-weight="700">外部 Asset ACL MCP</text>
+  <rect x="795.4" y="57.4" width="245.99999999999997" height="1763.0" fill="#FAFAFA" stroke="#B0BEC5" />
+  <rect x="795.4" y="57.4" width="245.99999999999997" height="34.44" fill="#ECEFF1" stroke="#B0BEC5" />
+  <text x="803.4" y="79.53999999999999" font-size="11" font-weight="700">Data Agent DB</text>
+  <rect x="1041.3999999999999" y="57.4" width="270.59999999999997" height="1763.0" fill="#FAFAFA" stroke="#B0BEC5" />
+  <rect x="1041.3999999999999" y="57.4" width="270.59999999999997" height="34.44" fill="#ECEFF1" stroke="#B0BEC5" />
+  <text x="1049.3999999999999" y="79.53999999999999" font-size="11" font-weight="700">SQLBot 管理 API</text>
+  <rect x="1312.0" y="57.4" width="262.4" height="1763.0" fill="#FAFAFA" stroke="#B0BEC5" />
+  <rect x="1312.0" y="57.4" width="262.4" height="34.44" fill="#ECEFF1" stroke="#B0BEC5" />
+  <text x="1320.0" y="79.53999999999999" font-size="11" font-weight="700">Agent Host</text>
+  <path d="M118.89999999999999,205.0 L118.89999999999999,219.35 L373.09999999999997,219.35 L373.09999999999997,233.7" class="arrow" stroke="#EF6C00" stroke-width="2" />
+  <path d="M373.09999999999997,322.26 L373.09999999999997,337.42999999999995 L660.0999999999999,337.42999999999995 L660.0999999999999,352.59999999999997" class="arrow" stroke="#1565C0" stroke-width="2" />
+  <path d="M660.0999999999999,447.71999999999997 L660.0999999999999,459.61 L660.0999999999999,459.61 L660.0999999999999,471.5" class="arrow" stroke="#2E7D32" stroke-width="2" />
+  <path d="M660.0999999999999,566.62 L660.0999999999999,578.51 L373.09999999999997,578.51 L373.09999999999997,590.4" class="arrow" stroke="#D32F2F" stroke-width="3" stroke-dasharray="8 4" />
+  <path d="M373.09999999999997,685.52 L373.09999999999997,697.41 L918.4,697.41 L918.4,709.3" class="arrow" stroke="#D32F2F" stroke-width="3" stroke-dasharray="8 4" />
+  <path d="M918.4,799.5 L918.4,813.8499999999999 L373.09999999999997,813.8499999999999 L373.09999999999997,828.1999999999999" class="arrow" stroke="#1565C0" stroke-width="2" />
+  <path d="M373.09999999999997,923.3199999999999 L373.09999999999997,935.2099999999999 L1176.6999999999998,935.2099999999999 L1176.6999999999998,947.0999999999999" class="arrow" stroke="#1565C0" stroke-width="2" />
+  <path d="M1176.6999999999998,1035.6599999999999 L1176.6999999999998,1050.83 L918.4,1050.83 L918.4,1066.0" class="arrow" stroke="#1565C0" stroke-width="2" />
+  <path d="M918.4,1157.84 L918.4,1177.52 L118.89999999999999,1177.52 L118.89999999999999,1197.1999999999998" class="arrow" stroke="#EF6C00" stroke-width="2" />
+  <path d="M118.89999999999999,1267.72 L118.89999999999999,1283.71 L373.09999999999997,1283.71 L373.09999999999997,1299.6999999999998" class="arrow" stroke="#1565C0" stroke-width="2" />
+  <path d="M373.09999999999997,1386.62 L373.09999999999997,1400.56 L1443.1999999999998,1400.56 L1443.1999999999998,1414.5" class="arrow" stroke="#1565C0" stroke-width="2" />
+  <path d="M1443.1999999999998,1506.34 L1443.1999999999998,1519.87 L1443.1999999999998,1519.87 L1443.1999999999998,1533.3999999999999" class="arrow" stroke="#1565C0" stroke-width="2" />
+  <path d="M1443.1999999999998,1625.24 L1443.1999999999998,1638.77 L118.89999999999999,1638.77 L118.89999999999999,1652.3" class="arrow" stroke="#EF6C00" stroke-width="2" />
+  <rect x="26.24" y="114.8" width="185.32" height="90.19999999999999" rx="8" fill="#FFF3E0" stroke="#EF6C00" stroke-width="2" />
+  <text x="33.62" y="135.29999999999998" font-size="10" font-weight="700">1 选择 1–5 个数据集</text>
+  <text x="33.62" y="151.7" font-size="10" font-weight="400">名称、简介、datasetRef</text>
+  <text x="33.62" y="168.1" font-size="10" font-weight="400">POC UI 已有；目录仍是固定 Provider</text>
+  <rect x="231.23999999999998" y="233.7" width="283.71999999999997" height="88.55999999999999" rx="8" fill="#E3F2FD" stroke="#1565C0" stroke-width="2" />
+  <text x="238.61999999999998" y="254.2" font-size="10" font-weight="700">2 POST /api/data-agents</text>
+  <text x="238.61999999999998" y="270.59999999999997" font-size="10" font-weight="400">只信服务端身份；校验数量与状态</text>
+  <text x="238.61999999999998" y="287.0" font-size="10" font-weight="400">POC CODE</text>
+  <rect x="534.64" y="352.59999999999997" width="250.92" height="95.11999999999999" rx="8" fill="#E8F5E9" stroke="#2E7D32" stroke-width="2" />
+  <text x="542.02" y="373.09999999999997" font-size="10" font-weight="700">3 access.check_resources</text>
+  <text x="542.02" y="389.5" font-size="10" font-weight="400">以可信 obId=159358 复核全部 refs</text>
+  <text x="542.02" y="405.9" font-size="10" font-weight="400">客户端 + 外部工具 LIVE</text>
+  <rect x="534.64" y="471.5" width="250.92" height="95.11999999999999" rx="8" fill="#E8F5E9" stroke="#2E7D32" stroke-width="2" />
+  <text x="542.02" y="491.99999999999994" font-size="10" font-weight="700">4 catalog.get_dataset_schema</text>
+  <text x="542.02" y="508.4" font-size="10" font-weight="400">取得授权字段、requiredFilters、版本</text>
+  <text x="542.02" y="524.8" font-size="10" font-weight="400">客户端 + 外部工具 LIVE</text>
+  <rect x="231.23999999999998" y="590.4" width="283.71999999999997" height="95.11999999999999" rx="8" fill="#FFEBEE" stroke="#D32F2F" stroke-width="3" stroke-dasharray="8 4" />
+  <text x="238.61999999999998" y="610.9" font-size="10" font-weight="700">5 同源映射门禁</text>
+  <text x="238.61999999999998" y="627.3" font-size="10" font-weight="400">MCP resource ↔ knowledge.sync_job / 物理字段</text>
+  <text x="238.61999999999998" y="643.6999999999999" font-size="10" font-weight="400">代码已失败关闭；同源 assetRef 尚缺</text>
+  <rect x="805.2399999999999" y="709.3" width="226.32" height="90.19999999999999" rx="8" fill="#E3F2FD" stroke="#1565C0" stroke-width="2" />
+  <text x="812.62" y="729.8" font-size="10" font-weight="700">6 保存草稿与数据集快照</text>
+  <text x="812.62" y="746.1999999999999" font-size="10" font-weight="400">data_agent + data_agent_dataset + audit</text>
+  <text x="812.62" y="762.5999999999999" font-size="10" font-weight="400">POC CODE</text>
+  <rect x="231.23999999999998" y="828.1999999999999" width="283.71999999999997" height="95.11999999999999" rx="8" fill="#E3F2FD" stroke="#1565C0" stroke-width="2" />
+  <text x="238.61999999999998" y="848.6999999999999" font-size="10" font-weight="700">7 幂等同步高级小助手</text>
+  <text x="238.61999999999998" y="865.0999999999999" font-size="10" font-weight="400">configuration 只含回调地址与凭证映射</text>
+  <text x="238.61999999999998" y="881.5" font-size="10" font-weight="400">POC CODE</text>
+  <rect x="1051.24" y="947.0999999999999" width="250.92" height="88.55999999999999" rx="8" fill="#E3F2FD" stroke="#1565C0" stroke-width="2" />
+  <text x="1058.62" y="967.5999999999999" font-size="10" font-weight="700">8 创建 type=1 Assistant</text>
+  <text x="1058.62" y="983.9999999999999" font-size="10" font-weight="400">管理账号调用；不登记静态数据源</text>
+  <text x="1058.62" y="1000.4" font-size="10" font-weight="400">SQLBOT CODE</text>
+  <rect x="805.2399999999999" y="1066.0" width="226.32" height="91.83999999999999" rx="8" fill="#FFF3E0" stroke="#EF6C00" stroke-width="2" />
+  <text x="812.62" y="1086.5" font-size="10" font-weight="700">9 保存 assistantId / 发布</text>
+  <text x="812.62" y="1102.8999999999999" font-size="10" font-weight="400">同步失败不得发布；更新/删除需补偿</text>
+  <text x="812.62" y="1119.3" font-size="10" font-weight="400">POC PARTIAL</text>
+  <rect x="26.24" y="1197.1999999999998" width="185.32" height="70.52" rx="8" fill="#FFFFFF" stroke="#455A64" stroke-width="2" />
+  <text x="33.62" y="1217.6999999999998" font-size="10" font-weight="700">10 开启已发布智能体</text>
+  <text x="33.62" y="1234.1" font-size="10" font-weight="400">用户选择 agentId 进入对话</text>
+  <rect x="231.23999999999998" y="1299.6999999999998" width="283.71999999999997" height="86.92" rx="8" fill="#E3F2FD" stroke="#1565C0" stroke-width="2" />
+  <text x="238.61999999999998" y="1320.1999999999998" font-size="10" font-weight="700">11 校验可见性并绑定 Session</text>
+  <text x="238.61999999999998" y="1336.6" font-size="10" font-weight="400">POST /{agentId}/open</text>
+  <text x="238.61999999999998" y="1353.0" font-size="10" font-weight="400">POC CODE</text>
+  <rect x="1321.84" y="1414.5" width="242.72" height="91.83999999999999" rx="8" fill="#E3F2FD" stroke="#1565C0" stroke-width="2" />
+  <text x="1329.22" y="1435.0" font-size="10" font-weight="700">12 创建 data-question Session</text>
+  <text x="1329.22" y="1451.3999999999999" font-size="10" font-weight="400">服务端注入可信 agentId；Host 不存主数据</text>
+  <text x="1329.22" y="1467.8" font-size="10" font-weight="400">HOST CODE</text>
+  <rect x="1321.84" y="1533.3999999999999" width="242.72" height="91.83999999999999" rx="8" fill="#FFF3E0" stroke="#EF6C00" stroke-width="2" />
+  <text x="1329.22" y="1553.8999999999999" font-size="10" font-weight="700">13 装载问数 Workspace</text>
+  <text x="1329.22" y="1570.3" font-size="10" font-weight="400">ClaudeAgentRuntime + data.ask MCP + 分析规则</text>
+  <text x="1329.22" y="1586.6999999999998" font-size="10" font-weight="400">PARTIAL</text>
+  <rect x="26.24" y="1652.3" width="185.32" height="72.16" rx="8" fill="#FFFFFF" stroke="#455A64" stroke-width="2" />
+  <text x="33.62" y="1672.8" font-size="10" font-weight="700">14 进入可提问状态</text>
+  <text x="33.62" y="1689.1999999999998" font-size="10" font-weight="400">此时尚未创建 SQLBot Chat</text>
+</svg>

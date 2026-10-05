@@ -1,0 +1,28 @@
+services:
+  opensandbox-server:
+    image: opensandbox/server:v0.2.2
+    command: ["--config", "/etc/opensandbox/server.toml"]
+    environment:
+      OPENSANDBOX_SERVER_API_KEY: ${OPENSANDBOX_SERVER_API_KEY:?set OPENSANDBOX_SERVER_API_KEY}
+    ports:
+      - "127.0.0.1:${OPENSANDBOX_PORT:-8080}:8080"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./server.toml:/etc/opensandbox/server.toml:ro
+      - opensandbox-state:/var/lib/opensandbox
+    privileged: false
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+    mem_limit: 1g
+    cpus: 1.0
+
+volumes:
+  opensandbox-state:

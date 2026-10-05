@@ -1,0 +1,46 @@
+:root {
+  font-family: Inter, "PingFang SC", "Microsoft YaHei", sans-serif;
+  color: #172033;
+  background: #f3f6fa;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; min-width: 960px; }
+button, select { font: inherit; }
+
+.davinci-shell { display: grid; grid-template-columns: 210px 1fr; min-height: 100vh; }
+.davinci-sidebar { padding: 24px 18px; color: #fff; background: #14243a; }
+.brand-mark { display: inline-grid; place-items: center; width: 34px; height: 34px; margin-right: 8px; border-radius: 9px; color: #14243a; background: #62c6db; font-weight: 800; }
+.davinci-sidebar nav { display: grid; gap: 8px; margin-top: 36px; }
+.davinci-sidebar nav button { padding: 11px 12px; border: 0; border-radius: 8px; color: #c9d5e4; text-align: left; background: transparent; cursor: pointer; }
+.davinci-sidebar nav button.active { color: #fff; background: #243b59; }
+
+.davinci-main { min-width: 0; }
+.topbar { display: flex; align-items: center; justify-content: space-between; padding: 22px 28px; background: #fff; border-bottom: 1px solid #dfe6ef; }
+.topbar h1 { margin: 4px 0 0; font-size: 24px; }
+.breadcrumb { margin: 0; color: #79879a; font-size: 12px; }
+.mock-badge { padding: 5px 8px; border-radius: 5px; color: #235d70; background: #dcf5f5; font-size: 11px; font-weight: 700; }
+.davinci-content { padding: 24px 28px; }
+
+.filter-row { display: flex; gap: 12px; margin-bottom: 18px; }
+.filter { padding: 9px 12px; border: 1px solid #d5dee9; border-radius: 8px; background: #fff; }
+.metric-grid, .widget-grid, .dataset-grid { display: grid; gap: 16px; }
+.metric-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.widget-grid { grid-template-columns: 1.4fr 1fr; margin-top: 16px; }
+.dataset-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.card { padding: 18px; border: 1px solid #dfe6ef; border-radius: 12px; background: #fff; box-shadow: 0 7px 20px rgb(31 53 80 / 5%); }
+.card h2, .card h3 { margin: 0 0 12px; }
+.metric-label { color: #6c7a8e; font-size: 13px; }
+.metric-value { margin: 9px 0 0; font-size: 28px; font-weight: 750; }
+.negative { color: #c44444; }
+.bars { display: flex; align-items: end; gap: 10px; height: 150px; padding-top: 15px; }
+.bars i { flex: 1; min-width: 20px; border-radius: 5px 5px 0 0; background: linear-gradient(#55b9ce, #2d789b); }
+.category-list { display: grid; gap: 10px; }
+.category-list div { display: flex; justify-content: space-between; padding-bottom: 8px; border-bottom: 1px solid #edf1f5; }
+
+.agent-launcher { position: fixed; right: 24px; bottom: 24px; width: 58px; height: 58px; border: 0; border-radius: 50%; color: #fff; background: #216d9d; box-shadow: 0 10px 30px rgb(22 73 106 / 35%); cursor: pointer; font-weight: 800; }
+.agent-panel { position: fixed; z-index: 3; top: 16px; right: 16px; bottom: 16px; width: min(420px, calc(100vw - 32px)); overflow: hidden; border: 1px solid #cfd9e5; border-radius: 14px; background: #fff; box-shadow: 0 20px 55px rgb(25 43 67 / 28%); }
+.agent-panel[hidden] { display: none; }
+.agent-panel > header { display: flex; align-items: center; justify-content: space-between; height: 46px; padding: 0 14px; border-bottom: 1px solid #e1e7ef; }
+.agent-panel > header button { border: 0; background: transparent; cursor: pointer; font-size: 24px; }
+#agentFrame { display: block; width: 100%; height: calc(100% - 46px); border: 0; }

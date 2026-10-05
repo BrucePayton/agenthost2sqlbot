@@ -1,0 +1,124 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1767" height="2033" viewBox="0 0 1767 2033">
+  <rect width="1767" height="2033" fill="#FFFFFF" />
+  <style>text{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif;fill:#263238}.arrow{fill:none;marker-end:url(#a)}</style>
+  <defs>
+    <marker id="a" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 z" fill="#455A64" />
+    </marker>
+  </defs>
+  <text x="24" y="30" font-size="20" font-weight="700">07B · 一次提问、动态 Ticket、回调与执行实施路线</text>
+  <text x="24" y="52" font-size="12">Data Agent 确定性调用外部 MCP；SQLBot 仅在授权回调成功后连接数据库</text>
+  <rect x="16.4" y="57.4" width="180.39999999999998" height="1926.9999999999998" fill="#FAFAFA" stroke="#B0BEC5" />
+  <rect x="16.4" y="57.4" width="180.39999999999998" height="34.44" fill="#ECEFF1" stroke="#B0BEC5" />
+  <text x="24.4" y="79.53999999999999" font-size="11" font-weight="700">用户 / 前端</text>
+  <rect x="196.79999999999998" y="57.4" width="233.7" height="1926.9999999999998" fill="#FAFAFA" stroke="#B0BEC5" />
+  <rect x="196.79999999999998" y="57.4" width="233.7" height="34.44" fill="#ECEFF1" stroke="#B0BEC5" />
+  <text x="204.79999999999998" y="79.53999999999999" font-size="11" font-weight="700">Agent Host</text>
+  <rect x="430.5" y="57.4" width="295.2" height="1926.9999999999998" fill="#FAFAFA" stroke="#B0BEC5" />
+  <rect x="430.5" y="57.4" width="295.2" height="34.44" fill="#ECEFF1" stroke="#B0BEC5" />
+  <text x="438.5" y="79.53999999999999" font-size="11" font-weight="700">逻辑 Data MCP / Data Agent</text>
+  <rect x="725.6999999999999" y="57.4" width="258.3" height="1926.9999999999998" fill="#FAFAFA" stroke="#B0BEC5" />
+  <rect x="725.6999999999999" y="57.4" width="258.3" height="34.44" fill="#ECEFF1" stroke="#B0BEC5" />
+  <text x="733.6999999999999" y="79.53999999999999" font-size="11" font-weight="700">外部 Asset ACL MCP</text>
+  <rect x="983.9999999999999" y="57.4" width="270.59999999999997" height="1926.9999999999998" fill="#FAFAFA" stroke="#B0BEC5" />
+  <rect x="983.9999999999999" y="57.4" width="270.59999999999997" height="34.44" fill="#ECEFF1" stroke="#B0BEC5" />
+  <text x="991.9999999999999" y="79.53999999999999" font-size="11" font-weight="700">SQLBot 高级小助手</text>
+  <rect x="1254.6" y="57.4" width="233.7" height="1926.9999999999998" fill="#FAFAFA" stroke="#B0BEC5" />
+  <rect x="1254.6" y="57.4" width="233.7" height="34.44" fill="#ECEFF1" stroke="#B0BEC5" />
+  <text x="1262.6" y="79.53999999999999" font-size="11" font-weight="700">MySQL / 缓存</text>
+  <rect x="1488.3" y="57.4" width="262.4" height="1926.9999999999998" fill="#FAFAFA" stroke="#B0BEC5" />
+  <rect x="1488.3" y="57.4" width="262.4" height="34.44" fill="#ECEFF1" stroke="#B0BEC5" />
+  <text x="1496.3" y="79.53999999999999" font-size="11" font-weight="700">安全失败终态</text>
+  <path d="M106.6,182.04 L106.6,197.62 L313.65,197.62 L313.65,213.2" class="arrow" stroke="#455A64" stroke-width="2" />
+  <path d="M313.65,295.2 L313.65,307.5 L313.65,307.5 L313.65,319.79999999999995" class="arrow" stroke="#EF6C00" stroke-width="2" />
+  <path d="M313.65,408.35999999999996 L313.65,421.47999999999996 L578.0999999999999,421.47999999999996 L578.0999999999999,434.59999999999997" class="arrow" stroke="#1565C0" stroke-width="2" />
+  <path d="M578.0999999999999,529.7199999999999 L578.0999999999999,541.6099999999999 L1119.3,541.6099999999999 L1119.3,553.5" class="arrow" stroke="#2E7D32" stroke-width="2" />
+  <path d="M1119.3,643.6999999999999 L1119.3,656.0 L1119.3,656.0 L1119.3,668.3" class="arrow" stroke="#1565C0" stroke-width="2" />
+  <path d="M1119.3,756.8599999999999 L1119.3,769.9799999999999 L578.0999999999999,769.9799999999999 L578.0999999999999,783.0999999999999" class="arrow" stroke="#1565C0" stroke-width="2" />
+  <path d="M578.0999999999999,874.9399999999999 L578.0999999999999,886.42 L854.8499999999999,886.42 L854.8499999999999,897.9" class="arrow" stroke="#1565C0" stroke-width="2" />
+  <path d="M854.8499999999999,989.7399999999999 L854.8499999999999,1001.2199999999999 L578.0999999999999,1001.2199999999999 L578.0999999999999,1012.6999999999999" class="arrow" stroke="#D32F2F" stroke-width="3" stroke-dasharray="8 4" />
+  <path d="M578.0999999999999,1104.54 L578.0999999999999,1116.02 L578.0999999999999,1116.02 L578.0999999999999,1127.5" class="arrow" stroke="#D32F2F" stroke-width="3" stroke-dasharray="8 4" />
+  <path d="M578.0999999999999,1219.34 L578.0999999999999,1230.82 L1119.3,1230.82 L1119.3,1242.3" class="arrow" stroke="#1565C0" stroke-width="2" />
+  <path d="M1119.3,1332.5 L1119.3,1344.8 L1371.4499999999998,1344.8 L1371.4499999999998,1357.1" class="arrow" stroke="#455A64" stroke-width="2" />
+  <path d="M1371.4499999999998,1448.9399999999998 L1371.4499999999998,1460.4199999999998 L1119.3,1460.4199999999998 L1119.3,1471.8999999999999" class="arrow" stroke="#455A64" stroke-width="2" />
+  <path d="M1119.3,1567.02 L1119.3,1578.9099999999999 L578.0999999999999,1578.9099999999999 L578.0999999999999,1590.8" class="arrow" stroke="#1565C0" stroke-width="2" />
+  <path d="M578.0999999999999,1684.28 L578.0999999999999,1696.9899999999998 L313.65,1696.9899999999998 L313.65,1709.6999999999998" class="arrow" stroke="#1565C0" stroke-width="2" />
+  <path d="M313.65,1798.26 L313.65,1811.38 L106.6,1811.38 L106.6,1824.5" class="arrow" stroke="#EF6C00" stroke-width="2" />
+  <path d="M715.86,829.02 L1498.1399999999999,829.02" class="arrow" stroke="#D32F2F" stroke-width="3" stroke-dasharray="8 4" />
+  <path d="M715.86,1058.62 L1498.1399999999999,1058.62" class="arrow" stroke="#D32F2F" stroke-width="3" stroke-dasharray="8 4" />
+  <path d="M1244.76,1287.3999999999999 L1498.1399999999999,1287.3999999999999" class="arrow" stroke="#D32F2F" stroke-width="3" stroke-dasharray="8 4" />
+  <rect x="26.24" y="114.8" width="160.72" height="67.24" rx="8" fill="#FFFFFF" stroke="#455A64" stroke-width="2" />
+  <text x="33.62" y="135.29999999999998" font-size="10" font-weight="700">1 用户提问</text>
+  <text x="33.62" y="151.7" font-size="10" font-weight="400">已开启的问数智能体 Session</text>
+  <rect x="206.64" y="213.2" width="214.01999999999998" height="82.0" rx="8" fill="#FFF3E0" stroke="#EF6C00" stroke-width="2" />
+  <text x="214.01999999999998" y="233.7" font-size="10" font-weight="700">2 澄清并改写</text>
+  <text x="214.01999999999998" y="250.1" font-size="10" font-weight="400">生成可独立执行问题</text>
+  <text x="214.01999999999998" y="266.5" font-size="10" font-weight="400">HOST PARTIAL</text>
+  <rect x="206.64" y="319.79999999999995" width="214.01999999999998" height="88.55999999999999" rx="8" fill="#E8F5E9" stroke="#2E7D32" stroke-width="2" />
+  <text x="214.01999999999998" y="340.29999999999995" font-size="10" font-weight="700">3 调用 data.ask</text>
+  <text x="214.01999999999998" y="356.7" font-size="10" font-weight="400">Claude SDK 进程内 MCP；注入 user/session</text>
+  <text x="214.01999999999998" y="373.09999999999997" font-size="10" font-weight="400">POC LIVE</text>
+  <rect x="440.34" y="434.59999999999997" width="275.52" height="95.11999999999999" rx="8" fill="#E8F5E9" stroke="#2E7D32" stroke-width="2" />
+  <text x="447.71999999999997" y="455.09999999999997" font-size="10" font-weight="700">4 读取 agent / ask_session</text>
+  <text x="447.71999999999997" y="471.5" font-size="10" font-weight="400">签发 60s Ticket；生成 Assistant JWT</text>
+  <text x="447.71999999999997" y="487.9" font-size="10" font-weight="400">运行容器 SECRET_KEY 已验证</text>
+  <rect x="993.8399999999999" y="553.5" width="250.92" height="90.19999999999999" rx="8" fill="#E3F2FD" stroke="#1565C0" stroke-width="2" />
+  <text x="1001.2199999999999" y="574.0" font-size="10" font-weight="700">5 assistant/start 或 question</text>
+  <text x="1001.2199999999999" y="590.4" font-size="10" font-weight="400">Certificate 仅携带本次 Ticket</text>
+  <text x="1001.2199999999999" y="606.8" font-size="10" font-weight="400">SQLBOT + POC CODE</text>
+  <rect x="993.8399999999999" y="668.3" width="250.92" height="88.55999999999999" rx="8" fill="#E3F2FD" stroke="#1565C0" stroke-width="2" />
+  <text x="1001.2199999999999" y="688.8" font-size="10" font-weight="700">6 GET 动态数据源回调</text>
+  <text x="1001.2199999999999" y="705.1999999999999" font-size="10" font-weight="400">X-Davinci-Ticket 原样转发</text>
+  <text x="1001.2199999999999" y="721.5999999999999" font-size="10" font-weight="400">SQLBOT CODE</text>
+  <rect x="440.34" y="783.0999999999999" width="275.52" height="91.83999999999999" rx="8" fill="#E3F2FD" stroke="#1565C0" stroke-width="2" />
+  <text x="447.71999999999997" y="803.5999999999999" font-size="10" font-weight="700">7 校验 Ticket</text>
+  <text x="447.71999999999997" y="820.0" font-size="10" font-weight="400">user / agent / session / questionHash / 原子次数</text>
+  <text x="447.71999999999997" y="836.4" font-size="10" font-weight="400">POC CODE</text>
+  <rect x="735.54" y="897.9" width="238.61999999999998" height="91.83999999999999" rx="8" fill="#E8F5E9" stroke="#2E7D32" stroke-width="2" />
+  <text x="742.92" y="918.4" font-size="10" font-weight="700">8 二次权限复核</text>
+  <text x="742.92" y="934.8" font-size="10" font-weight="400">access.check_resources + get_dataset_schema</text>
+  <text x="742.92" y="951.1999999999999" font-size="10" font-weight="400">CLIENT + LIVE MCP</text>
+  <rect x="440.34" y="1012.6999999999999" width="275.52" height="91.83999999999999" rx="8" fill="#FFEBEE" stroke="#D32F2F" stroke-width="3" stroke-dasharray="8 4" />
+  <text x="447.71999999999997" y="1033.2" font-size="10" font-weight="700">9 同源校验 + 字段投影</text>
+  <text x="447.71999999999997" y="1049.6" font-size="10" font-weight="400">仅授权字段；必保字段 + Top40</text>
+  <text x="447.71999999999997" y="1066.0" font-size="10" font-weight="400">同源 assetRef 尚未取得</text>
+  <rect x="440.34" y="1127.5" width="275.52" height="91.83999999999999" rx="8" fill="#E3F2FD" stroke="#1565C0" stroke-width="2" />
+  <text x="447.71999999999997" y="1148.0" font-size="10" font-weight="700">10 返回动态数据源</text>
+  <text x="447.71999999999997" y="1164.3999999999999" font-size="10" font-weight="400">DB 连接 + tables[].sql + fields</text>
+  <text x="447.71999999999997" y="1180.8" font-size="10" font-weight="400">POC CODE；配置后启用</text>
+  <rect x="993.8399999999999" y="1242.3" width="250.92" height="90.19999999999999" rx="8" fill="#E3F2FD" stroke="#1565C0" stroke-width="2" />
+  <text x="1001.2199999999999" y="1262.8" font-size="10" font-weight="700">11 NL2SQL / 校验 / 子查询替换</text>
+  <text x="1001.2199999999999" y="1279.1999999999998" font-size="10" font-weight="400">只允许 SELECT / WITH</text>
+  <text x="1001.2199999999999" y="1295.6" font-size="10" font-weight="400">SQLBOT CODE</text>
+  <rect x="1264.4399999999998" y="1357.1" width="214.01999999999998" height="91.83999999999999" rx="8" fill="#F3E5F5" stroke="#7B1FA2" stroke-width="2" />
+  <text x="1271.82" y="1377.6" font-size="10" font-weight="700">12 回调授权后连接 MySQL</text>
+  <text x="1271.82" y="1394.0" font-size="10" font-weight="400">测试高权限账号；生产切只读最小账号</text>
+  <text x="1271.82" y="1410.3999999999999" font-size="10" font-weight="400">POC 风险</text>
+  <rect x="993.8399999999999" y="1471.8999999999999" width="250.92" height="95.11999999999999" rx="8" fill="#E3F2FD" stroke="#1565C0" stroke-width="2" />
+  <text x="1001.2199999999999" y="1492.3999999999999" font-size="10" font-weight="700">13 SSE + Record Data</text>
+  <text x="1001.2199999999999" y="1508.8" font-size="10" font-weight="400">sql-data 是状态；行数据另取 record/{id}/data</text>
+  <text x="1001.2199999999999" y="1525.1999999999998" font-size="10" font-weight="400">CODE</text>
+  <rect x="440.34" y="1590.8" width="275.52" height="93.47999999999999" rx="8" fill="#E3F2FD" stroke="#1565C0" stroke-width="2" />
+  <text x="447.71999999999997" y="1611.3" font-size="10" font-weight="700">14 标准化 / 缓存 / 审计</text>
+  <text x="447.71999999999997" y="1627.6999999999998" font-size="10" font-weight="400">首屏≤200、缓存≤1000、10min TTL、evidence</text>
+  <text x="447.71999999999997" y="1644.1" font-size="10" font-weight="400">POC CODE</text>
+  <rect x="206.64" y="1709.6999999999998" width="214.01999999999998" height="88.55999999999999" rx="8" fill="#FFF3E0" stroke="#EF6C00" stroke-width="2" />
+  <text x="214.01999999999998" y="1730.1999999999998" font-size="10" font-weight="700">15 Host 核对并分析</text>
+  <text x="214.01999999999998" y="1746.6" font-size="10" font-weight="400">SQL、口径和字段依据一致后作答</text>
+  <text x="214.01999999999998" y="1763.0" font-size="10" font-weight="400">HOST PARTIAL</text>
+  <rect x="26.24" y="1824.5" width="160.72" height="72.16" rx="8" fill="#FFFFFF" stroke="#455A64" stroke-width="2" />
+  <text x="33.62" y="1845.0" font-size="10" font-weight="700">16 表格 / 分析 / 图表</text>
+  <text x="33.62" y="1861.3999999999999" font-size="10" font-weight="400">前端原生组件渲染</text>
+  <rect x="1498.1399999999999" y="783.0999999999999" width="242.72" height="91.83999999999999" rx="8" fill="#E8F5E9" stroke="#2E7D32" stroke-width="2" />
+  <text x="1505.52" y="803.5999999999999" font-size="10" font-weight="700">拒绝 A · invalid_ticket</text>
+  <text x="1505.52" y="820.0" font-size="10" font-weight="400">缺失、过期、完成或超次数</text>
+  <text x="1505.52" y="836.4" font-size="10" font-weight="400">FAIL-CLOSED CODE</text>
+  <rect x="1498.1399999999999" y="1012.6999999999999" width="242.72" height="91.83999999999999" rx="8" fill="#E8F5E9" stroke="#2E7D32" stroke-width="2" />
+  <text x="1505.52" y="1033.2" font-size="10" font-weight="700">拒绝 B · no_permission</text>
+  <text x="1505.52" y="1049.6" font-size="10" font-weight="400">MCP 拒绝/超时、Schema 不同源或需行过滤</text>
+  <text x="1505.52" y="1066.0" font-size="10" font-weight="400">FAIL-CLOSED CODE</text>
+  <rect x="1498.1399999999999" y="1241.48" width="242.72" height="91.83999999999999" rx="8" fill="#E3F2FD" stroke="#1565C0" stroke-width="2" />
+  <text x="1505.52" y="1261.98" font-size="10" font-weight="700">拒绝 C · cannot_generate</text>
+  <text x="1505.52" y="1278.3799999999999" font-size="10" font-weight="400">Top100 仅重试一次；仍失败即终止</text>
+  <text x="1505.52" y="1294.78" font-size="10" font-weight="400">POC CODE</text>
+</svg>

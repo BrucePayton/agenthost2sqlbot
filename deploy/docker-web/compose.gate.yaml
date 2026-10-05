@@ -1,0 +1,7 @@
+services:
+  postgres:
+    ports:
+      - 127.0.0.1:${DOCKER_WEB_POSTGRES_PORT:?set DOCKER_WEB_POSTGRES_PORT}:5432
+  opensandbox-server:
+    ports:
+      - 127.0.0.1:${DOCKER_WEB_OPENSANDBOX_PORT:?set DOCKER_WEB_OPENSANDBOX_PORT}:8080

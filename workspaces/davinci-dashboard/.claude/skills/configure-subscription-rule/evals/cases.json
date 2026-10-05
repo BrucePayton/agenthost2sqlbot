@@ -1,0 +1,1167 @@
+{
+  "version": 3,
+  "entries": [
+    {
+      "id": "personal-center",
+      "ownershipScope": "personal",
+      "sourceLocation": "personal",
+      "shortcut": false
+    },
+    {
+      "id": "space-center",
+      "ownershipScope": "space",
+      "sourceLocation": "space",
+      "shortcut": false
+    },
+    {
+      "id": "synced-space-center",
+      "ownershipScope": "space",
+      "sourceLocation": "space",
+      "shortcut": false
+    },
+    {
+      "id": "personal-dashboard-push",
+      "ownershipScope": "personal",
+      "sourceLocation": "personal",
+      "shortcut": true
+    },
+    {
+      "id": "personal-widget-alert",
+      "ownershipScope": "personal",
+      "sourceLocation": "personal",
+      "shortcut": true
+    },
+    {
+      "id": "space-dashboard-push",
+      "ownershipScope": "personal",
+      "sourceLocation": "space",
+      "shortcut": true
+    },
+    {
+      "id": "space-widget-alert",
+      "ownershipScope": "personal",
+      "sourceLocation": "space",
+      "shortcut": true
+    },
+    {
+      "id": "synced-dashboard-push",
+      "ownershipScope": "personal",
+      "sourceLocation": "space",
+      "shortcut": true
+    },
+    {
+      "id": "synced-widget-alert",
+      "ownershipScope": "personal",
+      "sourceLocation": "space",
+      "shortcut": true
+    }
+  ],
+  "cases": [
+    {
+      "id": "mixed-data-dashboard-content",
+      "request": "每天九点，把订单明细数据和订单仪表盘一起发给我，先配置不要保存。",
+      "expected": {
+        "ownershipScope": "personal",
+        "terminal": "reviewed-draft",
+        "datasetCount": 1,
+        "contentTypes": [
+          "data-table",
+          "dashboard-screenshot"
+        ],
+        "includeDataCheck": false,
+        "creates": 0
+      },
+      "batches": [
+        [
+          {
+            "operation": "set_schedule",
+            "frequency": "daily",
+            "times": [
+              "09:00"
+            ]
+          },
+          {
+            "operation": "set_send_rule",
+            "sendRule": "scheduled_dataset"
+          },
+          {
+            "operation": "upsert_dataset_query",
+            "datasetRef": "dataset-orders",
+            "dimensionRefs": [
+              "field-order"
+            ],
+            "metricRefs": [
+              "field-amount"
+            ]
+          },
+          {
+            "operation": "set_finalize",
+            "ruleName": "订单日报",
+            "desiredStatus": "disabled"
+          }
+        ],
+        [
+          {
+            "operation": "set_push_mode",
+            "mode": "all"
+          },
+          {
+            "operation": "set_content",
+            "title": "订单日报",
+            "components": [
+              {
+                "type": "data-table",
+                "queryRef": "query-orders",
+                "fieldRefs": [
+                  "field-order",
+                  "field-amount"
+                ]
+              },
+              {
+                "type": "dashboard-screenshot",
+                "dashboardRef": "dashboard-orders"
+              }
+            ]
+          }
+        ]
+      ]
+    },
+    {
+      "id": "space-order-record-alert",
+      "request": "在上海分析空间，每天九点检查昨日未成交订单，提交金额超过一万元的逐条发给对应区经，带上订单明细。",
+      "navigation": {
+        "spaceRef": "space-current",
+        "destination": "subscription"
+      },
+      "expected": {
+        "ownershipScope": "space",
+        "terminal": "reviewed-draft",
+        "grain": "order",
+        "pushMode": "record",
+        "operator": "gt",
+        "threshold": 10000,
+        "dateExpression": "last_day",
+        "dynamicEmployeeMustBeOutput": true,
+        "includeDataCheck": false,
+        "creates": 0
+      },
+      "batches": [
+        [
+          {
+            "operation": "set_schedule",
+            "frequency": "daily",
+            "times": [
+              "09:00"
+            ]
+          },
+          {
+            "operation": "set_send_rule",
+            "sendRule": "conditional"
+          },
+          {
+            "operation": "upsert_dataset_query",
+            "datasetRef": "dataset-orders",
+            "dimensionRefs": [
+              "field-order",
+              "field-manager"
+            ],
+            "metricRefs": [
+              "field-amount"
+            ],
+            "filters": [
+              {
+                "fieldRef": "field-created",
+                "operator": "eq",
+                "valueExp": "last_day"
+              },
+              {
+                "fieldRef": "field-status",
+                "operator": "in",
+                "valueRefs": [
+                  "value-unclosed"
+                ]
+              }
+            ]
+          },
+          {
+            "operation": "set_finalize",
+            "ruleName": "昨日未成交订单预警",
+            "desiredStatus": "disabled"
+          }
+        ],
+        [
+          {
+            "operation": "set_trigger_conditions",
+            "queryRef": "query-orders",
+            "conditions": [
+              {
+                "fieldRef": "field-amount",
+                "operator": "gt",
+                "values": [
+                  10000
+                ]
+              }
+            ],
+            "logicalOperator": "and"
+          },
+          {
+            "operation": "set_push_mode",
+            "mode": "record",
+            "queryRef": "query-orders"
+          },
+          {
+            "operation": "set_recipients",
+            "fieldRecipients": [
+              {
+                "queryRef": "query-orders",
+                "fieldRef": "field-manager"
+              }
+            ]
+          },
+          {
+            "operation": "set_content",
+            "title": "昨日未成交订单预警",
+            "includeDataTable": true,
+            "dataTableQueryRef": "query-orders",
+            "dataTableFieldRefs": [
+              "field-order",
+              "field-amount"
+            ]
+          }
+        ]
+      ]
+    },
+    {
+      "id": "weekly-alert-draft-only",
+      "request": "在空间仪表盘已打开预警草稿，改成每周一09:00，金额低于1000才发给我；不保存、不看数据。",
+      "expected": {
+        "ownershipScope": "personal",
+        "terminal": "reviewed-draft",
+        "includeDataCheck": false,
+        "creates": 0,
+        "starts": 0
+      },
+      "batches": [
+        [
+          {
+            "operation": "set_schedule",
+            "frequency": "weekly",
+            "weekdays": [
+              1
+            ],
+            "times": [
+              "09:00"
+            ]
+          },
+          {
+            "operation": "set_trigger_conditions",
+            "queryRef": "query-current",
+            "conditionGroups": [
+              {
+                "conditions": [
+                  {
+                    "outputRef": "output-amount",
+                    "operator": "lt",
+                    "values": [
+                      1000
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      ]
+    },
+    {
+      "id": "space-dynamic-multiquery",
+      "request": "空间规则：每天09点，按城市生成卡片发给对应经理；另带每城历史对比表。",
+      "expected": {
+        "ownershipScope": "space",
+        "terminal": "reviewed-draft",
+        "includeDataCheck": false,
+        "creates": 0
+      },
+      "batches": [
+        [
+          {
+            "operation": "set_schedule",
+            "frequency": "daily",
+            "times": [
+              "09:00"
+            ]
+          },
+          {
+            "operation": "set_send_rule",
+            "sendRule": "scheduled_dataset"
+          },
+          {
+            "operation": "upsert_dataset_query",
+            "datasetRef": "dataset-orders",
+            "name": "当日订单",
+            "metricRefs": [
+              "field-amount"
+            ],
+            "dimensionRefs": [
+              "field-city",
+              "field-manager"
+            ]
+          },
+          {
+            "operation": "upsert_dataset_query",
+            "datasetRef": "dataset-orders",
+            "name": "历史订单",
+            "metricRefs": [
+              "field-amount"
+            ],
+            "dimensionRefs": [
+              "field-city"
+            ]
+          }
+        ],
+        [
+          {
+            "operation": "set_push_mode",
+            "mode": "group",
+            "queryRef": "query-current",
+            "groupByFieldRef": "field-city",
+            "mappings": [
+              {
+                "queryRef": "query-history",
+                "fieldRef": "field-city"
+              }
+            ]
+          },
+          {
+            "operation": "set_recipients",
+            "fieldRecipients": [
+              {
+                "queryRef": "query-current",
+                "fieldRef": "field-manager"
+              }
+            ]
+          },
+          {
+            "operation": "set_content",
+            "title": "城市经营日报",
+            "components": [
+              {
+                "type": "richtext",
+                "markdown": "请关注当日经营数据"
+              },
+              {
+                "type": "data-table",
+                "queryRef": "query-current",
+                "outputRefs": [
+                  "output-city",
+                  "output-amount"
+                ]
+              },
+              {
+                "type": "data-table",
+                "queryRef": "query-history",
+                "outputRefs": [
+                  "output-history"
+                ]
+              }
+            ]
+          },
+          {
+            "operation": "set_finalize",
+            "ruleName": "城市经营日报",
+            "desiredStatus": "disabled"
+          }
+        ]
+      ]
+    },
+    {
+      "id": "comparison-composite-alert",
+      "request": "每周一09点，统计最近7天，成交额周同比跌幅超过20%且订单数低于50，或退款数超过10时通知我。",
+      "expected": {
+        "terminal": "reviewed-draft",
+        "includeDataCheck": false,
+        "creates": 0
+      },
+      "batches": [
+        [
+          {
+            "operation": "upsert_dataset_query",
+            "datasetRef": "dataset-orders",
+            "name": "经营预警",
+            "metrics": [
+              {
+                "fieldRef": "field-amount",
+                "contrast": {
+                  "timeFieldRef": "field-date",
+                  "calcMethod": "fullSame",
+                  "calcType": "diffRate",
+                  "valueExp": "last_week"
+                }
+              },
+              {
+                "fieldRef": "field-orders"
+              },
+              {
+                "fieldRef": "field-refunds"
+              }
+            ],
+            "filters": [
+              {
+                "fieldRef": "field-date",
+                "operator": "eq",
+                "valueExp": "last_days",
+                "values": [
+                  7
+                ]
+              }
+            ],
+            "queryParameters": [
+              {
+                "fieldRef": "parameter-region",
+                "values": [
+                  "华东"
+                ]
+              }
+            ]
+          }
+        ],
+        [
+          {
+            "operation": "set_trigger_conditions",
+            "queryRef": "query-alert",
+            "hitRecordLimit": 200,
+            "conditionGroups": [
+              {
+                "conditions": [
+                  {
+                    "outputRef": "output-week-diff",
+                    "operator": "lt",
+                    "values": [
+                      -0.2
+                    ]
+                  },
+                  {
+                    "outputRef": "output-count",
+                    "operator": "lt",
+                    "values": [
+                      50
+                    ]
+                  }
+                ]
+              },
+              {
+                "conditions": [
+                  {
+                    "outputRef": "output-refunds",
+                    "operator": "gt",
+                    "values": [
+                      10
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      ]
+    },
+    {
+      "id": "seven-content-components",
+      "request": "复用当前草稿已选资源，正文包含富文本、数据表、仪表盘截图、图表、已上传图片、下载按钮和按钮组。",
+      "expected": {
+        "terminal": "reviewed-draft",
+        "includeDataCheck": false,
+        "creates": 0
+      },
+      "batches": [
+        [
+          {
+            "operation": "set_content",
+            "title": "经营数据",
+            "components": [
+              {
+                "type": "richtext",
+                "markdown": "经营概览"
+              },
+              {
+                "type": "data-table",
+                "queryRef": "query-current",
+                "outputRefs": [
+                  "output-amount"
+                ]
+              },
+              {
+                "type": "dashboard-screenshot",
+                "dashboardRef": "dashboard-selected"
+              },
+              {
+                "type": "dashboard-chart",
+                "widgetRef": "widget-selected"
+              },
+              {
+                "type": "image",
+                "imageRef": "image-uploaded"
+              },
+              {
+                "type": "button",
+                "text": "下载数据",
+                "actionType": "download",
+                "queryRef": "query-current",
+                "outputRefs": [
+                  "output-amount"
+                ]
+              },
+              {
+                "type": "button-group",
+                "items": [
+                  {
+                    "text": "打开仪表盘",
+                    "actionType": "dashboard",
+                    "dashboardRef": "dashboard-selected"
+                  },
+                  {
+                    "text": "使用说明",
+                    "actionType": "link",
+                    "url": "https://example.com/help"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      ]
+    },
+    {
+      "id": "explicit-save-disabled",
+      "request": "确认保存当前已检查的规则。",
+      "expected": {
+        "terminal": "manual-preview-save",
+        "nativeConfirmation": false,
+        "creates": 0,
+        "includeDataCheck": false,
+        "saved": false
+      },
+      "review": {
+        "expectedRevision": 8,
+        "finish": true
+      }
+    },
+    {
+      "id": "cancel-save",
+      "request": "取消原生保存确认。",
+      "expected": {
+        "terminal": "unsaved-draft",
+        "creates": 0,
+        "retries": 0
+      }
+    },
+    {
+      "id": "unknown-save",
+      "request": "保存响应超时，是否创建未知。",
+      "expected": {
+        "terminal": "unknown",
+        "retries": 0
+      }
+    },
+    {
+      "id": "manual-revision-conflict",
+      "request": "用户刚在表单改了接收人，再把时间改成10点。",
+      "expected": {
+        "terminal": "reviewed-draft",
+        "preserveManualChanges": true,
+        "includeDataCheck": false,
+        "creates": 0
+      }
+    },
+    {
+      "id": "ambiguous-metric",
+      "request": "帮我发成交额；候选有多个不同业务口径。",
+      "expected": {
+        "terminal": "clarification",
+        "creates": 0
+      }
+    }
+  ],
+  "performance": {
+    "defaultDataQueries": 0,
+    "defaultRuleListQueries": 0,
+    "maxOperationsPerBatch": 32,
+    "existingDraftStarts": 0,
+    "metricsToMeasureInUat": [
+      "timeToFirstUsefulResponse",
+      "timeToEditableDraft",
+      "toolCalls",
+      "blockingClarifications",
+      "dataQueries",
+      "p50",
+      "p95"
+    ],
+    "executedLive": false,
+    "completionUsesFinish": true,
+    "completionExtraReviewCalls": 0
+  },
+  "nativeExamples": [
+    {
+      "id": "native-notification",
+      "title": "固定群通知",
+      "request": "在数据中心-组织空间，每月1日9点给BI测试群发送指定斜体文字、链接并@所有人。",
+      "evidence": "先回显；当前缺 space.list 时先 ui.open_space_page，再定位并打开指定空间、get_context。时间及收件人均已确定可成批提交；search_options(kind=recipient_group,query=BI测试群) 唯一精确候选返回 group-bi。不要访问正文外链。",
+      "calls": [
+        {
+          "action": "space.message_rule.start_draft",
+          "arguments": {
+            "mode": "blank",
+            "operations": [
+              {
+                "operation": "set_schedule",
+                "frequency": "monthly",
+                "monthDays": [
+                  1
+                ],
+                "times": [
+                  "09:00"
+                ]
+              },
+              {
+                "operation": "set_send_rule",
+                "sendRule": "scheduled_no_dataset"
+              }
+            ],
+            "scene": "msg-notify"
+          }
+        },
+        {
+          "action": "space.message_rule.apply_draft",
+          "arguments": {
+            "expectedRevision": 2,
+            "operations": [
+              {
+                "operation": "set_recipients",
+                "groupRefs": [
+                  "group-bi"
+                ]
+              },
+              {
+                "operation": "set_content",
+                "title": "7月数码3C标准更新-第四期",
+                "components": [
+                  {
+                    "type": "richtext",
+                    "segments": [
+                      {
+                        "type": "mention-all"
+                      },
+                      {
+                        "type": "newline"
+                      },
+                      {
+                        "type": "text",
+                        "text": "7月数码3C标准更新-第四期：游戏机、游戏手柄与电子书。",
+                        "italic": true
+                      },
+                      {
+                        "type": "newline"
+                      },
+                      {
+                        "type": "link",
+                        "text": "7月数码3C标准更新-第四期",
+                        "url": "https://atrenew.feishu.cn/wiki/KHSow4bRBioh3yk3BO4cFtoXnQg"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "operation": "set_finalize",
+                "ruleName": "数码3C标准更新通知"
+              }
+            ],
+            "finish": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "native-dashboard",
+      "title": "仪表盘截图、AI与跳转",
+      "request": "每天9点和18点给本人发送数巢仪表盘模板截图、AI解读和跳转。",
+      "evidence": "回显并核对归属。search_options dashboard 找到 dashboard-orders，再查该父对象 widget；widget-ai 的真实 contentKind=ai_interpret。个人接收人由原生锁定本人，无需重搜。",
+      "calls": [
+        {
+          "action": "space.message_rule.start_draft",
+          "arguments": {
+            "mode": "blank",
+            "operations": [
+              {
+                "operation": "set_schedule",
+                "frequency": "daily",
+                "times": [
+                  "09:00",
+                  "18:00"
+                ]
+              },
+              {
+                "operation": "set_send_rule",
+                "sendRule": "scheduled_no_dataset"
+              }
+            ],
+            "scene": "dashboard-push"
+          }
+        },
+        {
+          "action": "space.message_rule.apply_draft",
+          "arguments": {
+            "expectedRevision": 2,
+            "operations": [
+              {
+                "operation": "set_content",
+                "title": "数巢仪表盘订阅",
+                "components": [
+                  {
+                    "type": "dashboard-screenshot",
+                    "dashboardRef": "dashboard-orders"
+                  },
+                  {
+                    "type": "dashboard-chart",
+                    "widgetRef": "widget-ai"
+                  },
+                  {
+                    "type": "button",
+                    "text": "打开仪表盘",
+                    "actionType": "dashboard",
+                    "dashboardRef": "dashboard-orders"
+                  }
+                ]
+              },
+              {
+                "operation": "set_finalize",
+                "ruleName": "数巢仪表盘早晚报"
+              }
+            ],
+            "finish": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "native-data-table",
+      "title": "昨日四列数据表",
+      "request": "每周一14点将指定数据集昨日区经、门店、成交量、金额汇为一张卡片发给本人。",
+      "evidence": "先回显归属、粒度与四列要求并填时间。指定数据集定向搜索，field查询合并全部字段关键词，确认回收成交日期口径。查询回执给 query-orders 及 output-manager/store/volume/amount。示例分两批便于展示真实输出；指标有outputKey时可以同批使用local引用。",
+      "calls": [
+        {
+          "action": "space.message_rule.start_draft",
+          "arguments": {
+            "mode": "blank",
+            "operations": [
+              {
+                "operation": "set_schedule",
+                "frequency": "weekly",
+                "weekdays": [
+                  1
+                ],
+                "times": [
+                  "14:00"
+                ]
+              },
+              {
+                "operation": "set_send_rule",
+                "sendRule": "scheduled_dataset"
+              }
+            ],
+            "scene": "data-alert"
+          }
+        },
+        {
+          "action": "space.message_rule.apply_draft",
+          "arguments": {
+            "expectedRevision": 2,
+            "operations": [
+              {
+                "operation": "upsert_dataset_query",
+                "datasetRef": "dataset-orders",
+                "dimensionRefs": [
+                  "field-manager",
+                  "field-store"
+                ],
+                "metrics": [
+                  {
+                    "fieldRef": "field-volume"
+                  },
+                  {
+                    "fieldRef": "field-amount"
+                  }
+                ],
+                "filters": [
+                  {
+                    "fieldRef": "field-date",
+                    "operator": "eq",
+                    "valueExp": "last_day",
+                    "values": []
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "action": "space.message_rule.apply_draft",
+          "arguments": {
+            "expectedRevision": 3,
+            "operations": [
+              {
+                "operation": "set_push_mode",
+                "mode": "all"
+              },
+              {
+                "operation": "set_content",
+                "title": "昨日成交",
+                "components": [
+                  {
+                    "type": "data-table",
+                    "queryRef": "query-orders",
+                    "outputRefs": [
+                      "output-manager",
+                      "output-store",
+                      "output-volume",
+                      "output-amount"
+                    ]
+                  }
+                ]
+              },
+              {
+                "operation": "set_finalize",
+                "ruleName": "昨日成交周报"
+              }
+            ],
+            "finish": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "native-value-comparison-alert",
+      "title": "原值及日环比预警",
+      "request": "每天10点，仪表盘昨日成交量<10000且日环比<-0.1时发给本人，正文包含两项具体值。",
+      "evidence": "先回显并配置时间/conditional。dashboard下alert_widget找到真实指标并import_widget_source到当前未绑定任务（已有快捷草稿直接接续）。本例假定导入回执revision=3，query-sales、field-volume、field-date是实际原值/日期引用，完整输出确认缺日环比；原有其他筛选也须保留，示例中只有日期筛选。",
+      "calls": [
+        {
+          "action": "space.message_rule.start_draft",
+          "arguments": {
+            "mode": "blank",
+            "operations": [
+              {
+                "operation": "set_schedule",
+                "frequency": "daily",
+                "times": [
+                  "10:00"
+                ]
+              },
+              {
+                "operation": "set_send_rule",
+                "sendRule": "conditional"
+              }
+            ],
+            "scene": "data-alert"
+          }
+        },
+        {
+          "action": "space.message_rule.apply_draft",
+          "arguments": {
+            "expectedRevision": 2,
+            "operations": [
+              {
+                "operation": "import_widget_source",
+                "widgetRef": "alert-widget-sales"
+              }
+            ]
+          }
+        },
+        {
+          "action": "space.message_rule.apply_draft",
+          "arguments": {
+            "expectedRevision": 3,
+            "operations": [
+              {
+                "operation": "upsert_dataset_query",
+                "queryRef": "query-sales",
+                "metricsMode": "merge",
+                "metrics": [
+                  {
+                    "fieldRef": "field-volume"
+                  },
+                  {
+                    "fieldRef": "field-volume",
+                    "contrast": {
+                      "timeFieldRef": "field-date",
+                      "valueExp": "last_day",
+                      "calcMethod": "dayChain",
+                      "calcType": "diffRate"
+                    }
+                  }
+                ],
+                "filters": [
+                  {
+                    "fieldRef": "field-date",
+                    "operator": "eq",
+                    "valueExp": "last_day",
+                    "values": []
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "action": "space.message_rule.apply_draft",
+          "arguments": {
+            "expectedRevision": 4,
+            "operations": [
+              {
+                "operation": "set_trigger_conditions",
+                "queryRef": "query-sales",
+                "conditionGroups": [
+                  {
+                    "conditions": [
+                      {
+                        "outputRef": "output-volume",
+                        "operator": "lt",
+                        "values": [
+                          10000
+                        ]
+                      },
+                      {
+                        "outputRef": "output-dod",
+                        "operator": "lt",
+                        "values": [
+                          -0.1
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "operation": "set_push_mode",
+                "mode": "all"
+              },
+              {
+                "operation": "set_content",
+                "title": "昨日成交预警",
+                "components": [
+                  {
+                    "type": "richtext",
+                    "markdown": "昨日成交异常请关注。昨日成交量为$$volume$$，日环比为$$dod$$。",
+                    "bindings": [
+                      {
+                        "key": "volume",
+                        "refType": "dataset_field",
+                        "refSubType": "field",
+                        "queryRef": "query-sales",
+                        "outputRefs": [
+                          "output-volume"
+                        ]
+                      },
+                      {
+                        "key": "dod",
+                        "refType": "dataset_field",
+                        "refSubType": "field",
+                        "queryRef": "query-sales",
+                        "outputRefs": [
+                          "output-dod"
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "operation": "set_finalize",
+                "ruleName": "昨日成交异常预警"
+              }
+            ],
+            "finish": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "native-dynamic-order-alert",
+      "title": "异常订单与动态负责人",
+      "request": "明天11点检查昨日交易失败且提交订单额>8000的小订单，发给对应区经及战区负责人；标题带昨日变量，红色加粗文字与四列表格。",
+      "evidence": "回显并核对空间。executeAt按用户时区和当前真实日期换算；这里2026-09-18仅是示例，不能照抄。一次搜索订单/日期/状态/门店/金额/两种负责人，enum_value核验交易失败。已证实每条查询输出对应一个小订单、金额不重复累加，负责人具oa/ob资格并加入维度。现有输出来自实际查询；无法证实粒度须业务澄清。",
+      "calls": [
+        {
+          "action": "space.message_rule.start_draft",
+          "arguments": {
+            "mode": "blank",
+            "operations": [
+              {
+                "operation": "set_schedule",
+                "frequency": "once",
+                "executeAt": "2026-09-18 11:00"
+              },
+              {
+                "operation": "set_send_rule",
+                "sendRule": "conditional"
+              }
+            ],
+            "scene": "data-alert"
+          }
+        },
+        {
+          "action": "space.message_rule.apply_draft",
+          "arguments": {
+            "expectedRevision": 2,
+            "operations": [
+              {
+                "operation": "upsert_dataset_query",
+                "datasetRef": "dataset-orders",
+                "dimensionRefs": [
+                  "field-order",
+                  "field-store",
+                  "field-manager",
+                  "field-region-lead"
+                ],
+                "metrics": [
+                  {
+                    "fieldRef": "field-amount"
+                  }
+                ],
+                "filters": [
+                  {
+                    "fieldRef": "field-date",
+                    "operator": "eq",
+                    "valueExp": "last_day",
+                    "values": []
+                  },
+                  {
+                    "fieldRef": "field-status",
+                    "operator": "in",
+                    "valueRefs": [
+                      "value-trade-failed"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "action": "space.message_rule.apply_draft",
+          "arguments": {
+            "expectedRevision": 3,
+            "operations": [
+              {
+                "operation": "set_trigger_conditions",
+                "queryRef": "query-orders",
+                "conditionGroups": [
+                  {
+                    "conditions": [
+                      {
+                        "outputRef": "output-amount",
+                        "operator": "gt",
+                        "values": [
+                          8000
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "operation": "set_push_mode",
+                "mode": "record",
+                "queryRef": "query-orders"
+              },
+              {
+                "operation": "set_recipients",
+                "fieldRecipients": [
+                  {
+                    "queryRef": "query-orders",
+                    "fieldRef": "field-manager"
+                  },
+                  {
+                    "queryRef": "query-orders",
+                    "fieldRef": "field-region-lead"
+                  }
+                ]
+              },
+              {
+                "operation": "set_content",
+                "title": "$$yesterday$$未成交大额订单",
+                "titleBindings": [
+                  {
+                    "key": "yesterday",
+                    "refType": "system_time",
+                    "refSubType": "yesterday"
+                  }
+                ],
+                "components": [
+                  {
+                    "type": "richtext",
+                    "segments": [
+                      {
+                        "type": "text",
+                        "text": "昨日未成交的大额订单如下：",
+                        "bold": true,
+                        "color": "#ff0000"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "data-table",
+                    "queryRef": "query-orders",
+                    "outputRefs": [
+                      "output-order",
+                      "output-store",
+                      "output-manager",
+                      "output-amount"
+                    ]
+                  }
+                ]
+              },
+              {
+                "operation": "set_finalize",
+                "ruleName": "昨日未成交大额订单"
+              }
+            ],
+            "finish": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "native-filter-edit",
+      "title": "已有查询局部日期调整",
+      "request": "只把成交日期改为昨日，保留其他配置。",
+      "evidence": "当前revision=3，query-orders.filtersComplete=true；configuration的filters第0条fieldRef=field-order-date是成交日期，第1条为门店范围。只改日期，不重查全部字段，不更改其他筛选、参数及输出。",
+      "calls": [
+        {
+          "action": "space.message_rule.apply_draft",
+          "arguments": {
+            "expectedRevision": 3,
+            "operations": [
+              {
+                "operation": "upsert_dataset_query",
+                "queryRef": "query-orders",
+                "filterEdits": [
+                  {
+                    "action": "replace",
+                    "filterIndex": 0,
+                    "fieldRef": "field-order-date",
+                    "filter": {
+                      "operator": "eq",
+                      "valueExp": "last_day",
+                      "values": []
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

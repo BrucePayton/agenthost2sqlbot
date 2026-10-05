@@ -1,0 +1,17 @@
+{
+  "private": true,
+  "scripts": {
+    "generate:contracts": "python3 scripts/generate-davinci-contracts.py",
+    "check:contracts": "python3 scripts/generate-davinci-contracts.py --check",
+    "check:agui-build": "node scripts/check-agui-build.cjs",
+    "build:agui": "python3 scripts/generate-davinci-contracts.py --check && esbuild web/embed/main.js --bundle --format=esm --platform=browser --outfile=app/web/static/embed.js && esbuild web/davinci-mock/main.js --bundle --format=esm --platform=browser --outfile=demo/davinci_mock/static/app.js",
+    "test:js": "node --test tests/js/*.cjs"
+  },
+  "dependencies": {
+    "@ag-ui/client": "0.0.57",
+    "markdown-it": "^15.0.0"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.1"
+  }
+}

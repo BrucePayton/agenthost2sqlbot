@@ -1,0 +1,4 @@
+interface:
+  display_name: "Davinci 订阅推送规则配置"
+  short_description: "配置个人或空间订阅，支持预警与续改，完成后由用户预览和保存"
+  default_prompt: "Use $configure-subscription-rule and native space.message_rule tools to prepare editable subscription settings. Echo the requirements, configure known changes, reuse verified references, and summarize actual configuration for manual preview and save."

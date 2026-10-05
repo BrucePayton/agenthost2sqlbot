@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Davinci Mock</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <div
+    id="davinciApp"
+    class="davinci-shell"
+    data-agent-origin="{{ agent_origin }}"
+    data-parent-origin="{{ mock_origin }}"
+    data-nonce="{{ nonce }}"
+  >
+    <aside class="davinci-sidebar">
+      <div class="brand-mark">D</div>
+      <strong>Davinci</strong>
+      <nav aria-label="主导航">
+        <button type="button" data-route="/dashboard/1024">评估仪表盘</button>
+        <button type="button" data-route="/datasets">数据集</button>
+      </nav>
+    </aside>
+    <main class="davinci-main">
+      <header class="topbar">
+        <div>
+          <p class="breadcrumb">数据中心 / 经营分析</p>
+          <h1 id="pageTitle">评估仪表盘</h1>
+        </div>
+        <span class="mock-badge">MOCK DATA</span>
+      </header>
+      <section id="davinciContent" class="davinci-content"></section>
+    </main>
+    <button id="agentLauncher" class="agent-launcher" type="button" aria-label="打开数据分析助手">AI</button>
+    <section id="agentDrawer" class="agent-panel" aria-label="数据分析助手" hidden>
+      <header>
+        <strong>数据分析助手</strong>
+        <button id="agentClose" type="button" aria-label="关闭数据分析助手">×</button>
+      </header>
+      <iframe
+        id="agentFrame"
+        title="数据分析助手"
+        src="{{ agent_origin }}/embed?parentOrigin={{ mock_origin | urlencode }}&nonce={{ nonce }}"
+      ></iframe>
+    </section>
+  </div>
+  <script type="module" src="/static/app.js"></script>
+</body>
+</html>

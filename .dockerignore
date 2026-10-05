@@ -1,0 +1,16 @@
+.git
+.env
+.env.*.local
+.runtime
+.venv
+.worktrees
+data
+test-results
+.pytest_cache
+.ruff_cache
+__pycache__
+*.pyc
+agents.json
+description.md
+members.json
+squads.json

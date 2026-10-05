@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light">
+    <title>{{ app_name }}</title>
+    <link rel="stylesheet" href="/static/inspector.css?v={{ asset_revision }}">
+  </head>
+  <body>
+    <div class="inspector-app">
+      <header class="inspector-topbar">
+        <div>
+          <span class="eyebrow">DAVINCI AGENT · READ ONLY</span>
+          <h1>Session Inspector</h1>
+        </div>
+        <form id="inspectorSearchForm" class="search-form" role="search">
+          <select id="inspectorWorkspaceSelect" aria-label="工作区">
+            <option value="">全部工作区</option>
+          </select>
+          <input
+            id="inspectorSearchInput"
+            type="search"
+            maxlength="120"
+            placeholder="Session ID、标题、用户或 Workspace"
+            aria-label="搜索 Session"
+          >
+          <button type="submit">搜索</button>
+          <button id="inspectorRefreshButton" class="secondary" type="button">刷新</button>
+        </form>
+      </header>
+
+      <nav class="inspector-modes" aria-label="后台视图">
+        <button type="button" data-inspector-mode="sessions" class="active">会话</button>
+        <button type="button" data-inspector-mode="feedback">反馈统计</button>
+      </nav>
+      <section id="inspectorFeedbackPanel" class="feedback-panel" hidden>
+        <h2>回复评价</h2>
+        <p>北京时间，按首次评价日期统计当前有效票。每个问题的完整回复一票，工具续跑合并；改票更新原票，取消后不计数。</p>
+        <form id="feedbackFilterForm" class="feedback-filters">
+          <label>开始日期<input id="feedbackDateFrom" type="date" required></label>
+          <label>结束日期<input id="feedbackDateTo" type="date" required></label>
+          <label>评价人<input id="feedbackActorQuery" placeholder="姓名或账号" maxlength="120"></label>
+          <label>工作区<select id="feedbackWorkspace"><option value="">全部工作区</option></select></label>
+          <label>汇总方式<select id="feedbackGroupBy"><option value="day">按天</option><option value="actor">按人</option><option value="dayActor">每天每人</option></select></label>
+          <button type="submit">查询</button><button type="reset" class="secondary">清空筛选</button>
+        </form>
+        <p id="feedbackStatus" role="status" aria-live="polite"></p>
+        <div id="feedbackSummary" class="feedback-summary"></div>
+        <h3>评价汇总 <small>点击一行查看对应明细</small></h3>
+        <div class="feedback-table-wrap"><table id="feedbackGroups" class="feedback-table"></table></div>
+        <div class="catalog-pagination"><button id="feedbackGroupsPrev" class="secondary" type="button">上一页</button><span id="feedbackGroupsPage"></span><button id="feedbackGroupsNext" class="secondary" type="button">下一页</button></div>
+        <div class="feedback-detail-heading"><h3>评价明细</h3><span id="feedbackDetailFilter"></span>
+          <label>评价<select id="feedbackRating"><option value="">赞和踩</option><option value="up">赞</option><option value="down">踩</option></select></label>
+          <button id="feedbackAllDetails" type="button" class="secondary">查看全部明细</button>
+        </div>
+        <div class="feedback-table-wrap"><table id="feedbackDetails" class="feedback-table"></table></div>
+        <div class="catalog-pagination"><button id="feedbackDetailsPrev" class="secondary" type="button">上一页</button><span id="feedbackDetailsPage"></span><button id="feedbackDetailsNext" class="secondary" type="button">下一页</button></div>
+      </section>
+      <div id="inspectorSessionsPanel" class="inspector-layout">
+        <aside class="session-catalog" aria-label="Session 列表">
+          <div class="catalog-heading">
+            <strong>Sessions</strong>
+            <span id="inspectorSessionCount">0</span>
+          </div>
+          <div id="inspectorSessionList" class="catalog-list" role="list"></div>
+          <div id="inspectorCatalogEmpty" class="empty-state">暂无 Session</div>
+          <div class="catalog-pagination">
+            <button id="inspectorPreviousButton" class="secondary" type="button">上一页</button>
+            <span id="inspectorPageLabel">第 1 页</span>
+            <button id="inspectorNextButton" class="secondary" type="button">下一页</button>
+          </div>
+        </aside>
+
+        <main class="session-detail">
+          <section id="inspectorDetail" hidden>
+            <header class="detail-header">
+              <div>
+                <span id="inspectorSessionOwner" class="eyebrow"></span>
+                <h2 id="inspectorSessionTitle"></h2>
+                <div class="session-id-line">
+                  <code id="inspectorSessionId"></code>
+                  <button id="inspectorCopyButton" class="link-button" type="button">复制 ID</button>
+                  <a id="inspectorExportLink" class="link-button" download>下载导出</a>
+                  <button id="inspectorCurlButton" class="link-button" type="button">复制 curl</button>
+                </div>
+              </div>
+              <span id="inspectorSessionStatus" class="status-pill"></span>
+            </header>
+
+            <section id="inspectorTaskFeedback" class="task-feedback" aria-label="回复评价"></section>
+            <dl id="inspectorSessionMetadata" class="metadata-grid"></dl>
+
+            <div class="detail-toolbar">
+              <div class="view-tabs" role="tablist" aria-label="Session 视图">
+                <button class="view-tab active" type="button" data-view="timeline">事件</button>
+                <button class="view-tab" type="button" data-view="performance">耗时</button>
+                <button class="view-tab" type="button" data-view="context">上下文</button>
+              </div>
+              <label class="event-mode" for="inspectorEventMode">
+                事件范围
+                <select id="inspectorEventMode">
+                  <option value="key">关键事件</option>
+                  <option value="all">全部事件</option>
+                </select>
+              </label>
+            </div>
+
+            <section id="inspectorTimelinePanel" class="detail-panel">
+              <div id="inspectorTimeline" class="event-timeline"></div>
+            </section>
+            <section id="inspectorPerformancePanel" class="detail-panel" hidden>
+              <div id="inspectorPerformance" class="performance-list"></div>
+            </section>
+            <section id="inspectorContextPanel" class="detail-panel" hidden>
+              <pre id="inspectorContext" class="context-json"></pre>
+            </section>
+          </section>
+        </main>
+      </div>
+      <div id="inspectorToast" class="toast" role="status" aria-live="polite" hidden></div>
+    </div>
+
+    <script src="/static/session-inspector.js?v={{ asset_revision }}" defer></script>
+    <script src="/static/session-inspector-page.js?v={{ asset_revision }}" defer></script>
+  </body>
+</html>

@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light">
+    <title>{{ app_name }}</title>
+    <link rel="stylesheet" href="/static/app.css?v={{ asset_revision }}">
+  </head>
+  <body data-max-files-per-turn="{{ max_files_per_turn }}">
+    <div class="workbench">
+      <header class="topbar{% if debug_identity_enabled %} debug-enabled{% endif %}">
+        <button id="sidebarToggle" class="icon-button mobile-only" type="button" aria-label="打开会话列表" title="会话列表">
+          <span aria-hidden="true">☰</span>
+        </button>
+        <div class="brand-block">
+          <strong class="brand-name">{{ app_name }}</strong>
+          <span id="serviceStatus" class="service-status"><span class="status-dot"></span><span id="serviceStatusText">就绪</span></span>
+          <a class="data-agent-nav" href="/data-agents" title="创建、发布和开启数据 Agent">数据 Agent</a>
+        </div>
+        {% if debug_identity_enabled %}
+        <div id="debugIdentityPanel" class="debug-identity-panel">
+          <label for="debugObIdSelect">调试用户</label>
+          <select id="debugObIdSelect" aria-label="选择调试 OBID"></select>
+          <input id="debugSessionLocatorInput" type="text" placeholder="粘贴 Session ID" aria-label="定位 Session ID">
+          <button id="debugSessionLocatorButton" class="button secondary" type="button">定位</button>
+        </div>
+        {% endif %}
+        <div class="workspace-control">
+          <label for="workspaceSelect">Workspace</label>
+          <select id="workspaceSelect" aria-label="选择 Workspace"></select>
+          <span id="workspaceKind" class="workspace-kind">Workspace</span>
+        </div>
+        <div id="capabilitySummary" class="capability-summary" aria-live="polite">
+          <button id="skillsButton" class="capability-pill capability-button" type="button" aria-label="管理 Workspace Skills" hidden disabled>0 Skills</button>
+        </div>
+      </header>
+
+      <div class="app-shell">
+        <aside id="sessionSidebar" class="session-sidebar" aria-label="历史会话">
+          <div class="sidebar-header">
+            <div>
+              <span class="section-label">Sessions</span>
+              <strong id="sessionCount">0</strong>
+            </div>
+            <button id="newSessionButton" class="icon-button primary-icon" type="button" aria-label="新建会话" title="新建会话" disabled>
+              <span aria-hidden="true">＋</span>
+            </button>
+          </div>
+          <div id="sessionList" class="session-list" role="list"></div>
+          <div id="sessionListEmpty" class="sidebar-empty">暂无会话</div>
+        </aside>
+
+        <main class="chat-pane">
+          <header class="chat-header">
+            <div class="chat-heading">
+              <span id="sessionWorkspace" class="section-label">Workspace</span>
+              <h1 id="sessionTitle">选择或新建会话</h1>
+              <div id="sessionIdentity" class="session-identity" hidden>
+                <span>Session ID</span>
+                <code id="sessionIdValue"></code>
+                <button id="copySessionIdButton" class="text-button" type="button">复制</button>
+                <button id="sessionContextButton" class="text-button" type="button">查看上下文</button>
+                <button id="sessionPerformanceButton" class="text-button" type="button">查看耗时</button>
+              </div>
+            </div>
+            <div id="sessionActions" class="session-actions" hidden>
+              <span id="sessionStatus" class="status-badge">idle</span>
+              <button id="renameSessionButton" class="icon-button" type="button" aria-label="重命名会话" title="重命名">
+                <span aria-hidden="true">✎</span>
+              </button>
+              <button id="deleteSessionButton" class="icon-button danger-icon" type="button" aria-label="删除会话" title="删除">
+                <span aria-hidden="true">×</span>
+              </button>
+            </div>
+          </header>
+
+          <section id="messageTimeline" class="message-timeline" role="log" aria-live="polite" aria-relevant="additions text">
+            <div id="conversationEmpty" class="conversation-empty">
+              <div class="empty-mark" aria-hidden="true">W</div>
+              <strong>选择或新建会话</strong>
+            </div>
+          </section>
+
+          <section id="executionPanel" class="execution-panel" aria-live="polite" hidden>
+            <div class="execution-summary">
+              <strong id="executionPhase">准备执行</strong>
+              <span id="executionElapsed">0 秒</span>
+            </div>
+            <div class="execution-meta">
+              <span id="executionConnection">已连接</span>
+              <span id="executionHeartbeat">等待心跳</span>
+            </div>
+            <div id="executionSteps" class="execution-steps"></div>
+          </section>
+
+          <footer class="composer-shell">
+            <div id="attachmentTray" class="attachment-tray" aria-live="polite"></div>
+            <div
+              id="composerAutocomplete"
+              class="composer-autocomplete"
+              role="listbox"
+              aria-label="输入建议"
+              hidden
+            ></div>
+            <div id="composerAutocompleteStatus" class="sr-only" aria-live="polite"></div>
+            <div id="dropZone" class="composer">
+              <input id="attachmentInput" type="file" multiple hidden>
+              <button id="attachmentButton" class="icon-button composer-icon" type="button" aria-label="上传附件" title="上传附件" disabled>
+                <span aria-hidden="true">＋</span>
+              </button>
+              <textarea id="messageInput" rows="1" maxlength="20000" placeholder="输入消息" aria-label="消息" aria-autocomplete="list" aria-expanded="false" disabled></textarea>
+              <button id="sendButton" class="icon-button send-button" type="button" aria-label="发送消息" title="发送" disabled>
+                <span aria-hidden="true">↑</span>
+              </button>
+              <button id="stopButton" class="icon-button stop-button" type="button" aria-label="停止执行" title="停止" hidden>
+                <span aria-hidden="true">■</span>
+              </button>
+            </div>
+            <div class="composer-meta">
+              <span id="composerState">未选择会话</span>
+              <span id="usageSummary"></span>
+            </div>
+          </footer>
+        </main>
+      </div>
+
+      <section id="skillManagementView" class="skill-management-view" aria-labelledby="skillManagementTitle" hidden>
+        <header class="skill-management-header">
+          <button id="skillManagementBackButton" class="button secondary" type="button">← 返回会话</button>
+          <div>
+            <span id="skillManagementWorkspaceName" class="section-label">Workspace</span>
+            <h1 id="skillManagementTitle">Skill 管理</h1>
+          </div>
+          <p id="skillChangesNotice" class="skill-changes-notice" role="status" aria-live="polite" hidden>仅对新会话生效</p>
+        </header>
+
+        <div class="skill-management-body">
+          <div class="skill-catalog-sections">
+            <section id="globalSkillSection" class="skill-catalog-section" aria-labelledby="globalSkillTitle">
+              <header class="skill-catalog-header">
+                <div>
+                  <h2 id="globalSkillTitle">全局 Skill</h2>
+                  <p>团队共享，所有用户可上传；开关仅影响之后的新会话</p>
+                </div>
+                <div id="globalSkillImportRoot" class="skill-import-actions" hidden>
+                  <button id="globalSkillImportButton" class="button secondary" type="button">导入文件夹</button>
+                  <button id="globalSkillArchiveButton" class="button secondary" type="button">导入 .skill / ZIP</button>
+                </div>
+              </header>
+              <label class="sr-only" for="globalSkillDirectoryInput">导入全局 Skill 文件夹</label>
+              <input id="globalSkillDirectoryInput" type="file" webkitdirectory multiple hidden>
+              <label class="sr-only" for="globalSkillArchiveInput">导入全局 Skill 压缩包</label>
+              <input id="globalSkillArchiveInput" type="file" accept=".zip,.skill,application/zip" hidden>
+              <div id="globalSkillLoading" class="skill-manager-message" role="status" hidden>正在加载全局 Skills…</div>
+              <div id="globalSkillList" class="skill-manager-list" role="list"></div>
+              <div id="globalSkillEmpty" class="skill-manager-message" hidden>暂无全局 Skill</div>
+            </section>
+
+            <section id="personalSkillSection" class="skill-catalog-section" aria-labelledby="personalSkillTitle">
+              <header class="skill-catalog-header">
+                <div>
+                  <h2 id="personalSkillTitle">个人 Skill</h2>
+                  <p>仅属于当前个人 Workspace</p>
+                </div>
+                <div id="personalSkillImportRoot" class="skill-import-actions">
+                  <button id="personalSkillImportButton" class="button secondary" type="button">导入文件夹</button>
+                  <button id="personalSkillArchiveButton" class="button secondary" type="button">导入 .skill / ZIP</button>
+                </div>
+              </header>
+              <label class="sr-only" for="personalSkillDirectoryInput">导入个人 Skill 文件夹</label>
+              <input id="personalSkillDirectoryInput" type="file" webkitdirectory multiple hidden>
+              <label class="sr-only" for="personalSkillArchiveInput">导入个人 Skill 压缩包</label>
+              <input id="personalSkillArchiveInput" type="file" accept=".zip,.skill,application/zip" hidden>
+              <div id="personalSkillLoading" class="skill-manager-message" role="status" hidden>正在加载个人 Skills…</div>
+              <div id="personalSkillList" class="skill-manager-list" role="list"></div>
+              <div id="personalSkillEmpty" class="skill-manager-message" hidden>暂无个人 Skill</div>
+            </section>
+            <section id="workspaceInstructionsSection" class="skill-catalog-section" aria-labelledby="workspaceInstructionsTitle">
+              <header class="skill-catalog-header">
+                <div><h2 id="workspaceInstructionsTitle">工作区指令</h2><p>你自己的 CLAUDE.md；保存后对之后的新会话生效</p></div>
+                <div class="skill-import-actions">
+                  <button id="workspaceInstructionsReset" class="button secondary" type="button">还原默认</button>
+                  <button id="workspaceInstructionsSave" class="button" type="button">保存</button>
+                </div>
+              </header>
+              <div id="workspaceInstructionsLoading" class="skill-manager-message" role="status" hidden>正在加载工作区指令…</div>
+              <label class="sr-only" for="workspaceInstructionsEditor">工作区指令内容</label>
+              <textarea id="workspaceInstructionsEditor" class="skill-instructions-editor" rows="20" spellcheck="false"></textarea>
+              <div id="workspaceInstructionsStatus" class="skill-manager-message" role="status"></div>
+            </section>
+          </div>
+
+          <aside id="skillDetailPanel" class="skill-detail-panel" aria-labelledby="skillDetailName" hidden>
+            <header>
+              <span class="section-label">只读详情</span>
+              <h2 id="skillDetailName">选择一个 Skill</h2>
+              <p id="skillDetailDescription"></p>
+            </header>
+            <dl class="skill-detail-metadata">
+              <div><dt>版本</dt><dd id="skillDetailVersion"></dd></div>
+              <div><dt>Hash</dt><dd><code id="skillDetailHash"></code></dd></div>
+              <div><dt>来源</dt><dd id="skillDetailSource"></dd></div>
+              <div><dt>更新时间</dt><dd id="skillDetailUpdatedAt"></dd></div>
+            </dl>
+            <div class="skill-detail-content">
+              <strong>SKILL.md</strong>
+              <pre id="skillDetailContent"></pre>
+            </div>
+            <div class="skill-detail-manifest">
+              <strong>文件 Manifest</strong>
+              <ul id="skillDetailManifest"></ul>
+            </div>
+          </aside>
+        </div>
+      </section>
+    </div>
+
+    <dialog id="renameDialog">
+      <form id="renameForm" method="dialog">
+        <div class="dialog-header">
+          <h2>重命名会话</h2>
+          <button class="icon-button" type="button" data-close-dialog="renameDialog" aria-label="关闭" title="关闭">×</button>
+        </div>
+        <label for="renameInput">名称</label>
+        <input id="renameInput" name="title" maxlength="120" required autocomplete="off">
+        <div class="dialog-actions">
+          <button class="button secondary" type="button" data-close-dialog="renameDialog">取消</button>
+          <button class="button primary" type="submit">保存</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="deleteDialog">
+      <form id="deleteForm" method="dialog">
+        <div class="dialog-header">
+          <h2>删除会话</h2>
+          <button class="icon-button" type="button" data-close-dialog="deleteDialog" aria-label="关闭" title="关闭">×</button>
+        </div>
+        <p>该会话的消息、附件和本地 Workspace 将被永久删除。</p>
+        <div class="dialog-actions">
+          <button class="button secondary" type="button" data-close-dialog="deleteDialog">取消</button>
+          <button class="button danger" type="submit">删除</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="sessionContextDialog" class="session-context-dialog" aria-labelledby="sessionContextTitle">
+      <div class="dialog-header">
+        <h2 id="sessionContextTitle">Session 持久化上下文</h2>
+        <button class="icon-button" type="button" data-close-dialog="sessionContextDialog" aria-label="关闭" title="关闭">×</button>
+      </div>
+      <p class="context-boundary">包含 Agent Host 已持久化并脱敏的上下文；不包含 API Key、Token、环境变量值或未持久化的系统提示词。</p>
+      <pre id="sessionContextContent" class="session-context-content"></pre>
+    </dialog>
+
+    <dialog id="sessionPerformanceDialog" class="session-performance-dialog" aria-labelledby="sessionPerformanceTitle">
+      <div class="dialog-header">
+        <div>
+          <span class="section-label">Session 可观测性能</span>
+          <h2 id="sessionPerformanceTitle">全流程耗时</h2>
+        </div>
+        <button class="icon-button" type="button" data-close-dialog="sessionPerformanceDialog" aria-label="关闭" title="关闭">×</button>
+      </div>
+      <p class="performance-boundary">基于 Agent Host 持久化事件计算：展示事件发生时间、距上一步耗时和累计耗时。它能定位模型等待、前端工具及续跑延迟，但不是函数级 CPU profiling。</p>
+      <div id="sessionPerformanceContent" class="session-performance-content"></div>
+    </dialog>
+
+    <dialog id="skillImportConflictDialog" class="skill-import-conflict-dialog" aria-labelledby="skillImportConflictTitle">
+      <div class="skill-import-conflict-shell">
+        <div class="dialog-header">
+          <div>
+            <span class="section-label">导入冲突</span>
+            <h2 id="skillImportConflictTitle">已有同名 Skill</h2>
+          </div>
+        </div>
+        <p>请选择覆盖现有 Skill，或用新名称另存一份。上传文件只会临时保留在当前浏览器页面中。</p>
+        <dl class="skill-import-conflict-details">
+          <div><dt>Skill</dt><dd id="skillImportConflictName"></dd></div>
+          <div><dt>现有版本</dt><dd><code id="skillImportConflictExistingHash"></code></dd></div>
+          <div><dt>导入版本</dt><dd><code id="skillImportConflictIncomingHash"></code></dd></div>
+        </dl>
+        <label for="skillImportRenameInput">新 Skill 名称</label>
+        <input id="skillImportRenameInput" type="text" maxlength="128" autocomplete="off" placeholder="例如 brainstorming-copy">
+        <p id="skillImportConflictError" class="skill-manager-conflict" role="alert" hidden></p>
+        <div class="dialog-actions skill-import-conflict-actions">
+          <button id="skillImportCancelButton" class="button secondary" type="button">取消</button>
+          <button id="skillImportOverwriteButton" class="button danger" type="button">覆盖现有 Skill</button>
+          <button id="skillImportRenameButton" class="button primary" type="button">重命名导入</button>
+        </div>
+      </div>
+    </dialog>
+
+    <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+    <div id="mobileScrim" class="mobile-scrim" hidden></div>
+
+    <script src="/static/composer-autocomplete.js" defer></script>
+    <script src="/static/composer-paste.js" defer></script>
+    <script src="/static/skill-manager.js" defer></script>
+    <script src="/static/service-health.js" defer></script>
+    <script src="/static/session-inspector.js" defer></script>
+    {% if debug_identity_enabled %}<script src="/static/debug-identity.js" defer></script>{% endif %}
+    <script src="/static/app.js?v={{ asset_revision }}" defer></script>
+  </body>
+</html>

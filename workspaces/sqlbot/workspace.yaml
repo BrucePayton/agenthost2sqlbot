@@ -1,0 +1,17 @@
+version: 1
+id: sqlbot
+name: SQLBot 数据分析
+description: 通过 SQLBot MCP 执行受治理的自然语言问数
+
+skills: []
+allowed_tools:
+  - mcp__sqlbot__mcp_start
+  - mcp__sqlbot__mcp_ws_list
+  - mcp__sqlbot__mcp_datasource_list
+  - mcp__sqlbot__mcp_model_list
+  - mcp__sqlbot__mcp_question
+
+mcp_servers:
+  sqlbot:
+    type: sse
+    url_env: SQLBOT_MCP_URL

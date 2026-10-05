@@ -1,0 +1,22 @@
+version: 1
+id: davinci-dashboard
+name: Davinci 仪表盘助手
+description: 在 Davinci 工作台内查找数据、配置和解读仪表盘组件，并管理协同空间与订阅推送规则。
+model: deepseek-v4-pro-0813
+skills:
+  - beautify-dashboard
+  - configure-dashboard-widget
+  - configure-subscription-rule
+  - interpret-dashboard
+  - locate-data
+  - manage-space
+allowed_tools:
+  - Read
+  - Grep
+  - Skill
+  - mcp__davinci_data__*
+mcp_servers:
+  davinci_data:
+    type: http
+    url_env: DAVINCI_DATA_MCP_URL
+    authorization_source: davinci_session

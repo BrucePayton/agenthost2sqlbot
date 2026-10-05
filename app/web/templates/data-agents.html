@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>数据 Agent 管理</title>
+    <link rel="stylesheet" href="/static/data-agents.css?v={{ asset_revision }}">
+  </head>
+  <body>
+    <header class="topbar">
+      <div><span class="eyebrow">Agent Host × SQLBot</span><h1>数据 Agent 管理</h1></div>
+      <a href="/">返回工作台</a>
+    </header>
+    <main>
+      <section id="health" class="health" aria-live="polite">正在检查集成能力…</section>
+      <section class="panel create-panel">
+        <div><span class="eyebrow">创建与开启</span><h2>创建数据 Agent</h2><p>一个数据 Agent 对应一个 SQLBot 高级小助手。发布时同步，开启时建立隔离问数会话。</p></div>
+        <form id="createForm">
+          <label>名称<input id="name" maxlength="80" required placeholder="例如：知识库同步分析"></label>
+          <label>描述<textarea id="description" maxlength="500" rows="3" placeholder="说明业务用途和数据范围"></textarea></label>
+          <fieldset><legend>授权数据集</legend><div id="datasets">正在读取可用数据集…</div></fieldset>
+          <button type="submit">创建草稿</button>
+        </form>
+      </section>
+      <section class="panel">
+        <div class="section-heading"><div><span class="eyebrow">生命周期</span><h2>已有数据 Agent</h2></div><button id="refresh" class="secondary" type="button">刷新</button></div>
+        <div id="agents" class="agent-grid"></div>
+        <p id="empty" class="empty" hidden>暂无数据 Agent，请先创建草稿。</p>
+      </section>
+      <section id="questionPanel" class="panel" hidden>
+        <h2 id="questionTitle">问数</h2>
+        <p>实时展示选源、SQL 生成、查询执行和图表生成。可展开执行明细，或继续追问、分析数据。每次开启建立独立会话。</p>
+        <form id="questionForm"><label>业务问题<textarea id="question" required maxlength="4000" rows="3"></textarea></label><button id="askButton" type="submit">提问</button></form>
+        <div id="questionResult" class="conversation"></div>
+      </section>
+      <div id="notice" class="notice" role="status" hidden></div>
+    </main>
+    <script src="/static/vendor/g2.min.js" defer></script>
+    <script src="/static/data-agent-chat.js?v={{ asset_revision }}" defer></script>
+    <script src="/static/data-agents.js?v={{ asset_revision }}" defer></script>
+  </body>
+</html>
