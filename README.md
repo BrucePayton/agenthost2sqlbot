@@ -512,6 +512,14 @@ cp .env.docker.example .env.docker.local
 bash scripts/docker-web.sh up --claude
 ```
 
+Docker 的 Data Agent 配置也统一写入 `.env.docker.local`，不要手工修改生成的
+`.runtime/docker-web/*.env`。启动器保留已识别的 `DATA_AGENT_*`、`SQLBOT_*`、
+`STARROCKS_*` 配置；`DATA_AGENT_STARROCKS_MANIFEST` 填宿主机文件路径，由启动器
+为 API、Worker 和迁移容器生成只读挂载。启用后会为本地 Mock 用户添加
+`data-question` Workspace 角色。完整连接配置及凭据须来自同一 SQLBot 实例。
+`/api/health` 就绪只证明通用服务可用，Data Agent 还须检查
+`/api/data-agents/health`、数据集、Agent 列表和本地高级小助手的绑定。
+
 生命周期命令：
 
 ```bash
@@ -772,3 +780,50 @@ curl http://127.0.0.1:8000/api/workspaces
 - `opensandbox_docker` 仅是本地工程 Gate，并不等同于生产多租户安全认证。
 
 完整产品与技术要求见 [需求规格](docs/superpowers/specs/2026-07-12-claude-workspace-mvp-design.md)。实施任务见 [实现计划](docs/superpowers/plans/2026-07-12-claude-workspace-mvp.md)。
+
+
+## 主界面 Data Agent 问答
+
+在主界面选择“数巢问数”工作空间，新建会话后从服务端列表选择已发布的助手。
+管理页的“开启问数”也直接进入该主会话。助手绑定后不在原会话中切换；切换助手请新建会话。
+
+Claude SDK Agent 调用 `mcp__data_mcp__ask` 获取 SQL、实际查询数据和证据，再生成最终回答。
+工具的 `contextMode=new` 创建新的 SQLBot 会话，`continue` 复用当前绑定；没有绑定的 SQLBot
+会话时自动创建。主界面显示当前 SQLBot 会话，并允许在空闲时“重置问数上下文”。重置不删除
+Claude 消息或历史查询结果。SQLBot 生成完整图表配置，由主界面复用 SQLBot 原生 G2/S2 渲染器展示；不调用 SQLBot 二次分析。
+
+`GET/PUT /api/sessions/{session_id}/data-agent` 校验主会话所有者和工作空间。
+PostgreSQL 下上下文变更与新 Turn 入队锁定相同 Session 行，运行期间拒绝重置。
+同一进程的问数请求按主会话串行执行。
+
+Docker 的 OpenSandbox Runner 通过已有控制通道发送 `data.ask.request`；Worker 从 Turn 所属
+Session/User 解析身份，调用 Host DataAgentService，并回传 SQL 和结果。数据库凭据、SQLBot
+票据及内部提示词日志不传入 Runner。更新这条链路时必须同时重建并配置 App 和 Runner 镜像。
+
+数据流出现 `sql-data=execute-success` 和 `finish` 后，Host 直接读取对应记录的数据；不再为确认结果读取整个 SQLBot 聊天，避免多轮问数额外消耗授权回调次数。旧版缺少完成信号时仍保留聊天详情校验。Docker 部署保留被会话引用的 Runner 镜像标签，避免滚动构建破坏旧沙箱的状态查询。
+
+### SQLBot 原生图表
+
+问数请求启用 `generate_chart=true`，完整保存 SQLBot 返回的标题、轴字段、系列和多指标配置。
+主界面和 Data Agent 页面共用 `web/sqlbot-chart/main.js`，支持柱状图、条形图、折线图、饼图和 S2 表格。
+图表使用已缓存的查询结果；截断时显示实际绘制行数。历史记录如果仅保存图表类型，则回退数据表并提示重新问数，不猜测字段映射。
+历史展示读取已持久化的查询快照，仍校验助手和结果归属，不受短期结果 TTL 影响；TTL 仅限制后续分析、预测和推荐操作，避免历史图表在刷新后消失。查询快照不代表实时数据。
+
+`web/sqlbot-chart/vendor/` 保留 SQLBot 原始图表实现和许可证，`SOURCE.json` 记录源文件摘要、提交、部署 bundle 摘要和依赖版本。
+构建会验证原始文件及依赖版本，禁止直接修改 vendor 算法来消除差异。升级 SQLBot 时应同步该来源清单及源码，并重新做配置对照和浏览器验收。
+
+```sh
+npm ci
+npm run build:sqlbot-charts
+node --test tests/js/test_sqlbot_charts.cjs tests/js/data-agent-chat.cjs
+# 参数须为当前 SQLBot 部署的实际前端 bundle；摘要必须与 SOURCE.json 匹配。
+node scripts/verify-sqlbot-charts.cjs /path/to/sqlbot-deployed-index.js
+```
+
+对照脚本从部署 bundle 中提取图表实现，与本项目生成的 G2/S2 配置比较，覆盖 5 种类型共 30 个场景。
+这证明配置转换一致，不替代真实浏览器的视觉验收，也不保证未来 SQLBot 升级后自动一致。
+构建产物位于 `app/web/static/sqlbot-charts*`，部署时需一起更新；本次恢复同时修改了 Runner 提示词，因此需更新 App 和 Runner 镜像。
+
+### 数巢问数的 MCP 取数开关
+
+会话顶部“取数方式”可在 SQLBot（原流程）和 MCP 工具之间切换。MCP 模式直接使用公司 `table.search / table.describe / table.query`，不要求 SQLBot 助手，也不经 Service-2 取数。服务端配置、独立登录缓存、上下文切换行为和容器运行条件见 [MCP 取数说明](docs/data-question-mcp.md)。

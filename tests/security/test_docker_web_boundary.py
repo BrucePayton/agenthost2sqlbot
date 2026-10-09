@@ -135,14 +135,14 @@ def test_container_workspace_is_valid_and_has_no_host_integrations() -> None:
     root = ROOT / "deploy/docker-web/workspaces"
     entries = WorkspaceRegistry(root, "claude-sonnet-4-6", environ={}).scan()
 
-    assert len(entries) == 1
-    entry = entries[0]
-    assert entry.available is True
-    assert entry.validation_errors == ()
-    assert entry.manifest is not None
-    assert entry.manifest.skills == []
-    assert entry.manifest.skills_root_env is None
-    assert entry.manifest.mcp_servers == {}
+    assert {entry.id for entry in entries} == {"example", "data-question"}
+    for entry in entries:
+        assert entry.available is True
+        assert entry.validation_errors == ()
+        assert entry.manifest is not None
+        assert entry.manifest.skills == []
+        assert entry.manifest.skills_root_env is None
+        assert entry.manifest.mcp_servers == {}
 
 
 def test_rendered_compose_keeps_api_environment_credential_free(tmp_path: Path) -> None:

@@ -360,6 +360,13 @@ class Settings(BaseSettings):
         le=86400,
         validation_alias="DAVINCI_SESSION_TTL_SECONDS",
     )
+    data_mcp_command: str | None = Field(default=None, validation_alias="DATA_MCP_COMMAND")
+    data_mcp_args: list[str] = Field(default_factory=list, validation_alias="DATA_MCP_ARGS")
+    data_mcp_token_cache_dir: Path | None = Field(default=None, validation_alias="DATA_MCP_TOKEN_CACHE_DIR")
+    data_mcp_subject: str | None = Field(default=None, validation_alias="DATA_MCP_SUBJECT")
+    data_mcp_gateway_url: AnyHttpUrl = Field(default="https://bimcp-gateway.aihuishou.com", validation_alias="DATA_MCP_GATEWAY_URL")
+    data_mcp_timeout_seconds: float = Field(default=60, gt=0, le=300, validation_alias="DATA_MCP_TIMEOUT_SECONDS")
+
     data_agent_enabled: bool = Field(
         default=False, validation_alias="DATA_AGENT_ENABLED"
     )

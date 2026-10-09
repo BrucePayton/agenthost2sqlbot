@@ -190,7 +190,7 @@ async def test_migrations_create_current_schema_on_fresh_database(
     assert "uq_workspaces_personal_owner" in {
         index["name"] for index in workspace_indexes
     }
-    assert migration_head == "0016"
+    assert migration_head == "0017"
     assert foreign_keys_enabled == 1
     assert foreign_key_violations == []
     await database.dispose()
@@ -714,7 +714,7 @@ def test_nocase_migration_preserves_non_conflicting_0002_skills_and_files(
         if connection.in_transaction():
             connection.commit()
 
-    assert version == "0016"
+    assert version == "0017"
     assert skills == [("alpha", "Alpha"), ("beta", "beta")]
     assert files == [
         ("alpha", "reference.bin", b"\x00\xff"),
@@ -904,6 +904,8 @@ async def test_task_feedback_migration_preserves_legacy_votes(settings_factory):
         connection.execute(text("DROP TABLE data_agent_ask_sessions"))
         connection.execute(text("DROP TABLE data_agent_datasets"))
         connection.execute(text("DROP TABLE data_agents"))
+        connection.execute(text("ALTER TABLE sessions DROP COLUMN data_mcp_tools_json"))
+        connection.execute(text("ALTER TABLE sessions DROP COLUMN data_backend"))
         connection.execute(text("UPDATE alembic_version SET version_num = '0012'"))
         actor = connection.scalar(text("SELECT created_by FROM sessions WHERE id=:session"), {"session": session})
         for message, rating, created, updated in [

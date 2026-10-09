@@ -170,7 +170,7 @@ async def test_data_agent_full_host_sqlbot_callback_chain(settings_factory) -> N
     assert result.row_count == 3
     assert result.truncated is True
     assert result.evidence["datasetRefs"] == [SYNC_JOB_REF]
-    assert result.chart_hint["type"] == "bar"
+    assert result.chart_hint == {"type": "bar", "x": "status", "y": ["total"]}
     assert len(fake.callback_payloads) == 2
     supplied = fake.callback_payloads[0][0]
     assert supplied["user"] == "sqlbot_poc_ro"
@@ -187,9 +187,24 @@ async def test_data_agent_full_host_sqlbot_callback_chain(settings_factory) -> N
         assert stored_result is not None
         stored_result.created_at = datetime.now(UTC) - timedelta(seconds=31)
         await session.commit()
+    historical = await service.get_result(
+        agent_id=created.id, result_id=result.result_id, identity=identity
+    )
+    assert historical.rows == cached.rows
+    assert historical.chart_hint == cached.chart_hint
+    with pytest.raises(AppError):
+        await service.get_result(
+            agent_id=created.id, result_id=result.result_id,
+            identity=IdentityContext("other-owner", "159358", "Other"),
+        )
+    with pytest.raises(AppError) as denied:
+        await service.repository.get_result(
+            result_id=result.result_id, agent_id=created.id, user_subject="other-subject"
+        )
+    assert denied.value.code == "data_agent_result_not_found"
     with pytest.raises(AppError) as expired:
         await service.get_result(
-            agent_id=created.id, result_id=result.result_id, identity=identity
+            agent_id=created.id, result_id=result.result_id, identity=identity, require_fresh=True
         )
     assert expired.value.code == "data_agent_result_expired"
 

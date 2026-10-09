@@ -14,6 +14,8 @@ from app.db.models import (
     DataAgentRecord,
     DataAgentResultRecord,
     DataAgentTicketRecord,
+    SessionRecord,
+    TurnRecord,
 )
 from app.errors import AppError
 
@@ -164,13 +166,55 @@ class DataAgentRepository:
                 raise AppError("data_agent_session_not_found", "Data-agent session is not bound.", 404)
             return record
 
-    async def set_sqlbot_chat(self, ask_session_id: str, chat_id: int) -> None:
+    async def set_sqlbot_chat(self, ask_session_id: str, chat_id: int | None) -> None:
         async with self.database.session() as db:
             record = await db.get(DataAgentAskSessionRecord, ask_session_id)
             if record is None:
                 raise AppError("data_agent_session_not_found", "Data-agent session is not bound.", 404)
             record.sqlbot_chat_id = chat_id
             record.updated_at = datetime.now(UTC)
+            await db.commit()
+
+    async def configure_context(self, *, host_session_key: str, user_subject: str,
+                                agent_id: str | None, reset: bool, backend: str | None = None,
+                                mcp_tools: list[dict] | None = None) -> None:
+        from app.turns.state_machine import ACTIVE_TURN_STATES
+        async with self.database.session() as db:
+            session = await db.scalar(select(SessionRecord).where(
+                SessionRecord.id == host_session_key).with_for_update())
+            if session is None or session.workspace_id != "data-question":
+                raise AppError("invalid_workspace", "Data Agent session is unavailable.", 404)
+            active = await db.scalar(select(TurnRecord.id).where(
+                TurnRecord.session_id == host_session_key,
+                TurnRecord.status.in_(ACTIVE_TURN_STATES),
+            ).limit(1))
+            if active:
+                raise AppError("data_context_busy", "Wait for the current answer before changing context.", 409)
+            record = await db.scalar(select(DataAgentAskSessionRecord).where(
+                DataAgentAskSessionRecord.host_session_key == host_session_key))
+            if record and record.user_subject != user_subject:
+                raise AppError("data_agent_session_conflict", "Session identity mismatch.", 403)
+            target = backend or session.data_backend
+            if target not in {"mcp", "sqlbot"}:
+                raise AppError("invalid_data_backend", "Invalid data backend.", 400)
+            if target == "sqlbot" and agent_id:
+                if record is None:
+                    record = DataAgentAskSessionRecord(id=str(uuid.uuid4()), agent_id=agent_id,
+                        user_subject=user_subject, host_session_key=host_session_key)
+                    db.add(record)
+                elif record.agent_id != agent_id:
+                    raise AppError("data_agent_session_conflict", "Create a new session to change the data agent.", 409)
+            switched = target != session.data_backend
+            if switched:
+                session.data_backend = target
+                session.claude_session_id = None
+            if target == "mcp" and mcp_tools is not None:
+                session.data_mcp_tools_json = json.dumps(mcp_tools, ensure_ascii=False)
+            if reset and target == "mcp":
+                session.claude_session_id = None
+            if record and (reset or switched):
+                record.sqlbot_chat_id = None
+                record.updated_at = datetime.now(UTC)
             await db.commit()
 
     async def add_ticket(self, ticket: DataAgentTicketRecord) -> None:

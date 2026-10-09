@@ -34,7 +34,7 @@ async function harness() {
   const nodes = new Map();
   const document = {body: new Element(), querySelector: () => null, createElement: tag => new Element(tag),
     getElementById: id => { if (!nodes.has(id)) nodes.set(id, new Element()); return nodes.get(id); }};
-  const context = {document, SessionInspector, module: {exports: {}}, console,
+  const context = {document, SessionInspector, createDataAgentContext: require("../../app/web/static/data-agent-context.js").createDataAgentContext, module: {exports: {}}, console,
     window: {clearTimeout() {}, setTimeout() {}}, testPresentation: await import('../../web/embed/user-facing-error.js')};
   // Exercise actual classic-script renderers without initialization, network or test-only production exports.
   vm.runInNewContext(fs.readFileSync(require.resolve('../../app/web/static/app.js'), 'utf8') + `

@@ -7,9 +7,9 @@ import json
 import re
 import secrets
 import uuid
+from collections.abc import Awaitable, Callable
 from datetime import UTC, datetime, timedelta
 from typing import Any
-from collections.abc import Awaitable, Callable
 
 from app.auth.models import IdentityContext
 from app.config import Settings
@@ -49,6 +49,10 @@ class DataAgentService:
         sqlbot: SQLBotClient | None = None,
         asset_authorization: AssetAuthorizationPort | None = None,
     ) -> None:
+        from app.sessions.locks import SessionLockRegistry
+        self.context_locks = SessionLockRegistry()
+        from app.data_mcp.table_mcp import TableMcpClient
+        self.table_mcp = TableMcpClient(settings)
         self.settings = settings
         self.repository = DataAgentRepository(database)
         self.provider = (StarRocksPocProvider(settings) if settings.data_agent_provider == "starrocks_poc" else KnowledgeMysqlProvider(settings))
@@ -65,6 +69,18 @@ class DataAgentService:
         else:
             self.catalog_sqlbot = self.sqlbot
         self.asset_authorization = asset_authorization or AssetMcpClient(settings)
+
+    async def call_table_tool(self, *, host_session_key: str, name: str, arguments: dict) -> dict:
+        from app.db.models import SessionRecord, UserRecord
+        async with self.repository.database.session() as db:
+            session = await db.get(SessionRecord, host_session_key)
+            if session is None or session.workspace_id != "data-question" or session.data_backend != "mcp":
+                raise AppError("table_mcp_forbidden", "当前会话未启用 MCP 取数。", 403)
+            user = await db.get(UserRecord, session.created_by)
+            if user is None:
+                raise AppError("table_mcp_forbidden", "会话用户不存在。", 403)
+            subject = user.external_subject
+        return await self.table_mcp.call_tool(subject, name, arguments)
 
     async def aclose(self) -> None:
         await self.sqlbot.aclose()
@@ -444,7 +460,27 @@ class DataAgentService:
             } for field in selected_fields],
         }
 
-    async def ask(
+    async def ask(self, *, user_subject: str, host_session_key: str, question: str,
+                  requested_agent_id: str | None = None, context_mode: str = "continue",
+                  on_event: Callable[[dict], Awaitable[None]] | None = None) -> DataAskResult:
+        if context_mode not in {"new", "continue"}:
+            raise AppError("invalid_context_mode", "Invalid SQLBot context mode.", 400)
+        async with self.context_locks.acquire(host_session_key):
+            self._require_enabled()
+            self.provider.require_subject(user_subject)
+            binding = await self.repository.get_ask_session(host_session_key, user_subject)
+            if requested_agent_id and requested_agent_id != binding.agent_id:
+                raise AppError("data_agent_session_conflict", "The requested agent does not match this session.", 409)
+            actual_mode = "new" if context_mode == "new" or binding.sqlbot_chat_id is None else "continue"
+            if context_mode == "new":
+                await self.repository.set_sqlbot_chat(binding.id, None)
+            result = await self._ask_in_context(
+                user_subject=user_subject, host_session_key=host_session_key,
+                question=question, requested_agent_id=requested_agent_id, on_event=on_event)
+            result.evidence["contextMode"] = actual_mode
+            return result
+
+    async def _ask_in_context(
         self,
         *,
         user_subject: str,
@@ -483,7 +519,8 @@ class DataAgentService:
             )
 
     async def get_result(
-        self, *, agent_id: str, result_id: str, identity: IdentityContext
+        self, *, agent_id: str, result_id: str, identity: IdentityContext,
+        require_fresh: bool = False,
     ) -> DataAskResult:
         subject = self.require_identity(identity)
         await self.repository.get_agent(agent_id, identity.user_id)
@@ -493,12 +530,14 @@ class DataAgentService:
         created_at = record.created_at
         if created_at.tzinfo is None:
             created_at = created_at.replace(tzinfo=UTC)
-        if datetime.now(UTC) - created_at > timedelta(
+        # Persisted history is a snapshot, not a fresh query. Only follow-up
+        # actions expire; viewing an owned snapshot must survive cache TTL.
+        if require_fresh and datetime.now(UTC) - created_at > timedelta(
             seconds=self.settings.data_agent_result_ttl_seconds
         ):
             raise AppError(
                 "data_agent_result_expired",
-                "The cached result has expired. Ask the question again.",
+                "该结果已超过后续分析的有效期，请重新问数；历史查询快照仍可查看。",
                 410,
             )
         return self._result_out(
@@ -507,7 +546,7 @@ class DataAgentService:
 
     async def followup(self, *, agent_id: str, result_id: str, action: str,
                        identity: IdentityContext, on_event: Callable[[dict], Awaitable[None]]) -> dict:
-        result = await self.get_result(agent_id=agent_id, result_id=result_id, identity=identity)
+        result = await self.get_result(agent_id=agent_id, result_id=result_id, identity=identity, require_fresh=True)
         record = await self.repository.get_result(result_id=result_id, user_subject=identity.external_subject, agent_id=agent_id)
         agent, datasets = await self.repository.get_agent(agent_id, identity.user_id)
         if agent.status != "published" or agent.sqlbot_assistant_id is None:
@@ -579,7 +618,7 @@ class DataAgentService:
             for dataset in datasets
             for field in json.loads(dataset.fields_json)
         ]
-        chart_hint = answer.get("chart_hint") or _fallback_chart_hint(columns, cached_rows)
+        chart_hint = dict(answer.get("chart_hint") or {})
         result = DataAgentResultRecord(
             id=str(uuid.uuid4()), agent_id=agent.id, user_subject=user_subject,
             host_session_key=host_session_key, sqlbot_chat_id=chat_id,
@@ -751,16 +790,3 @@ def _hash(value: str) -> str:
 
 def _stable_numeric_id(value: str) -> int:
     return int.from_bytes(hashlib.sha256(value.encode("utf-8")).digest()[:7], "big")
-
-
-def _fallback_chart_hint(columns: list[str], rows: list[dict[str, Any]]) -> dict[str, Any]:
-    if not rows or len(columns) < 2:
-        return {"type": "table"}
-    numeric = [column for column in columns if isinstance(rows[0].get(column), (int, float))]
-    temporal = [column for column in columns if any(word in column.casefold() for word in ("date", "time", "dt"))]
-    if temporal and numeric:
-        return {"type": "line", "x": temporal[0], "y": [numeric[0]]}
-    if numeric:
-        dimension = next((column for column in columns if column not in numeric), columns[0])
-        return {"type": "bar", "x": dimension, "y": [numeric[0]]}
-    return {"type": "table"}

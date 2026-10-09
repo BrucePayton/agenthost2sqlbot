@@ -523,6 +523,13 @@ function renderWorkspaceOptions() {
   });
 }
 
+const dataAgentContext = createDataAgentContext({
+  root: $("dataAgentContext"), select: $("dataAgentSelect"),
+  reset: $("resetDataAgentContext"), status: $("dataAgentContextStatus"),
+  backend: $("dataBackendSelect"), agentLabel: $("dataAgentSelectLabel"), manage: $("dataAgentManageLink"),
+  api, changed: updateSessionHeader, error: showError,
+});
+
 async function selectWorkspace(workspaceId) {
   state.workspaceEpoch += 1;
   closeEventSource();
@@ -531,6 +538,7 @@ async function selectWorkspace(workspaceId) {
   state.composerComposing = false;
   state.workspace = state.workspaces.find((workspace) => workspace.id === workspaceId) || null;
   state.session = null;
+  void dataAgentContext.load(null);
   void state.skillCandidates?.selectWorkspace(state.workspace?.id || null);
   state.pendingAttachments = [];
   state.loadingAttachments = false;
@@ -687,6 +695,7 @@ async function selectSession(sessionId, { session = null } = {}) {
   closeSidebar();
   state.session = session || state.sessions.find((item) => item.id === sessionId) || await api(`/api/sessions/${sessionId}`);
   const selectedId = state.session.id;
+  void dataAgentContext.load(state.workspace?.id === "data-question" ? selectedId : null);
   void state.skillCandidates.selectSession(selectedId);
   state.composerComposing = false;
   state.pendingAttachments = [];
@@ -705,7 +714,7 @@ async function selectSession(sessionId, { session = null } = {}) {
   await loadPendingAttachments(selectedId, selectionGeneration);
   try {
     const history = await api(`/api/sessions/${encodeURIComponent(selectedId)}/messages`);
-    if (state.session?.id !== selectedId) return;
+    if (state.session?.id !== selectedId || state.sessionSelectionGeneration !== selectionGeneration) return;
     history.forEach((record) => handleEvent(record.event_type, record.payload, {
       key: `${record.turn_id}:${record.sequence}`,
       turnId: record.turn_id,
@@ -715,8 +724,9 @@ async function selectSession(sessionId, { session = null } = {}) {
     if (history.length === 0) showConversationEmpty("开始新的对话");
     if (state.session.status === "running" && history.length) {
       connectEvents(history[history.length - 1].turn_id);
-    } else {
-      resetExecutionPanel();
+    } else if (history.length) {
+      state.currentPhase = "历史执行记录";
+      updateExecutionPanel();
     }
     scrollTimeline();
   } catch (error) {
@@ -762,7 +772,8 @@ function updateSessionHeader() {
   elements.sessionActions.hidden = !state.session;
   elements.sessionStatus.textContent = state.session?.status || "idle";
   elements.sessionStatus.className = `status-badge ${state.session?.status || "idle"}`;
-  const enabled = Boolean(state.session)
+  dataAgentContext.setRunning(state.running);
+  const enabled = dataAgentContext.ready() && Boolean(state.session)
     && !state.running
     && !state.deletingSession
     && ServiceHealth.canExecute(state.serviceState);
@@ -911,6 +922,7 @@ function renderSessionPerformance(traces) {
 }
 
 function clearConversation() {
+  if (typeof SQLBotCharts !== "undefined") SQLBotCharts.destroyAll();
   elements.messageTimeline.replaceChildren();
   showConversationEmpty("选择或新建会话");
   elements.usageSummary.textContent = "";
@@ -924,6 +936,7 @@ function clearCurrentSessionSelection() {
   void state.skillCandidates?.selectWorkspace(state.workspace?.id || null);
   state.composerComposing = false;
   state.session = null;
+  void dataAgentContext.load(null);
   state.pendingAttachments = [];
   state.loadingAttachments = false;
   state.activeUploadOperationGeneration = null;
@@ -1179,6 +1192,7 @@ async function sendMessage() {
     || state.deletingSession
     || !ServiceHealth.canExecute(state.serviceState)
   ) return;
+  if (!dataAgentContext.ready()) return;
   const submittingSessionId = state.session.id;
   const message = elements.messageInput.value.trim();
   if (!message && !state.pendingAttachments.length) return;
@@ -1330,7 +1344,9 @@ function handleEvent(type, payload, context) {
 
   switch (type) {
     case "turn.started":
-      state.turnStartedAt = Date.parse(payload.started_at) || Date.now();
+      state.turnStartedAt = Date.parse(payload.started_at || context.occurredAt) || Date.now();
+      state.turnEndedAt = null;
+      if (context.history) appendExecutionStep("turn", "本轮执行", payload.started_at || context.occurredAt);
       elements.executionPanel.hidden = false;
       updateExecutionPanel();
       break;
@@ -1366,24 +1382,24 @@ function handleEvent(type, payload, context) {
       elements.usageSummary.textContent = `${payload.input_tokens || 0} in · ${payload.output_tokens || 0} out${payload.cost_usd == null ? "" : ` · $${Number(payload.cost_usd).toFixed(4)}`}`;
       break;
     case "turn.failed":
-      state.turnEndedAt = Date.now();
+      state.turnEndedAt = Date.parse(context.occurredAt) || Date.now();
       appendSystemEvent(payload, true);
-      finishTurn("error");
+      if (!context.history) finishTurn("error");
       break;
     case "turn.cancelled":
-      state.turnEndedAt = Date.parse(payload.cancelled_at) || Date.now();
+      state.turnEndedAt = Date.parse(payload.cancelled_at || context.occurredAt) || Date.now();
       appendSystemEvent("执行已停止");
-      finishTurn("idle");
+      if (!context.history) finishTurn("idle");
       break;
     case "turn.interrupted":
-      state.turnEndedAt = Date.parse(payload.interrupted_at) || Date.now();
+      state.turnEndedAt = Date.parse(payload.interrupted_at || context.occurredAt) || Date.now();
       state.currentPhase = userFacingUI.formatUserFacingError(payload, {outcomeUnknown: true});
       appendSystemEvent(payload, true, {outcomeUnknown: true});
-      finishTurn("interrupted");
+      if (!context.history) finishTurn("interrupted");
       break;
     case "turn.completed":
-      state.turnEndedAt = Date.parse(payload.completed_at) || Date.now();
-      finishTurn("idle");
+      state.turnEndedAt = Date.parse(payload.completed_at || context.occurredAt) || Date.now();
+      if (!context.history) finishTurn("idle");
       break;
     default:
       break;
@@ -1523,7 +1539,7 @@ function appendAssistantDelta(turnId, text) {
     state.streamMessages.set(turnId, wrapper);
     elements.messageTimeline.append(wrapper);
   }
-  wrapper.querySelector(".message-body").textContent += text;
+  AssistantMarkdown.append(wrapper.querySelector(".message-body"), text);
 }
 
 function completeAssistantMessage(turnId, text) {
@@ -1532,7 +1548,7 @@ function completeAssistantMessage(turnId, text) {
     wrapper = messageElement("assistant", "Claude", text);
     elements.messageTimeline.append(wrapper);
   } else {
-    wrapper.querySelector(".message-body").textContent = text;
+    AssistantMarkdown.render(wrapper.querySelector(".message-body"), "assistant", text);
     wrapper.classList.remove("streaming");
   }
   state.streamMessages.delete(turnId);
@@ -1546,7 +1562,7 @@ function messageElement(role, labelText, text) {
   label.textContent = labelText;
   const body = document.createElement("div");
   body.className = "message-body";
-  body.textContent = text;
+  AssistantMarkdown.render(body, role, text);
   wrapper.append(label, body);
   return wrapper;
 }
@@ -1633,33 +1649,29 @@ function renderToolCompleted(payload) {
 }
 
 async function renderDataAskResult(outputPreview) {
-  const resultId = outputPreview.match(/"resultId"\s*:\s*"([^"]+)"/)?.[1];
-  const agentId = outputPreview.match(/"agentId"\s*:\s*"([^"]+)"/)?.[1];
-  if (!resultId || !agentId) return;
-  const existing = elements.messageTimeline.querySelector(`[data-data-result-id="${CSS.escape(resultId)}"]`);
-  if (existing) return;
+  const ids = SQLBotCharts.receiptIds(outputPreview);
+  if (!ids) return;
+  const {resultId, agentId} = ids;
+  if (elements.messageTimeline.querySelector(`[data-data-result-id="${CSS.escape(resultId)}"]`)) return;
+  const selectedId = state.session?.id, generation = state.sessionSelectionGeneration;
+  const card = document.createElement("article");
+  card.className = "data-result-card"; card.dataset.dataResultId = resultId;
+  card.textContent = "正在加载 SQLBot 图表…";
+  elements.messageTimeline.append(card);
   try {
     const result = await api(`/api/data-agents/${encodeURIComponent(agentId)}/results/${encodeURIComponent(resultId)}`);
-    const card = document.createElement("article");
-    card.className = "data-result-card";
-    card.dataset.dataResultId = resultId;
-    const heading = document.createElement("div");
-    heading.className = "data-result-heading";
-    const title = document.createElement("strong");
-    title.textContent = `问数结果 · ${result.rowCount} 行${result.truncated ? "（展示已截断）" : ""}`;
-    const evidence = document.createElement("span");
-    evidence.textContent = `SQLBot record #${result.recordId}`;
-    heading.append(title, evidence);
+    if (state.session?.id !== selectedId || state.sessionSelectionGeneration !== generation || !card.isConnected) return;
+    card.replaceChildren();
+    const heading = document.createElement("div"); heading.className = "data-result-heading";
+    heading.textContent = `问数结果（查询快照） · ${result.rowCount} 行 · SQLBot record #${result.recordId}`;
     card.append(heading);
-    if (result.rows.length) card.append(buildDataResultChart(result), buildDataResultTable(result));
-    else {
-      const empty = document.createElement("p"); empty.textContent = "查询成功，结果为空。"; card.append(empty);
-    }
-    const sql = contextDetails("SQL 与证据", {sql: result.sql, fieldsUsed: result.fieldsUsed, evidence: result.evidence});
-    card.append(sql);
-    elements.messageTimeline.append(card);
+    const chart = document.createElement("div"); chart.className = "sqlbot-result-chart"; card.append(chart);
+    try { await SQLBotCharts.mount(chart, result); }
+    catch (error) { chart.textContent = error.message; chart.setAttribute("role", "status"); card.append(buildDataResultTable(result)); }
+    if (state.session?.id !== selectedId || state.sessionSelectionGeneration !== generation) { SQLBotCharts.destroy(chart); return; }
+    card.append(contextDetails("SQL 与证据", {sql: result.sql, fieldsUsed: result.fieldsUsed, evidence: result.evidence}));
     scrollTimeline();
-  } catch (error) { appendSystemEvent(error.message, true); }
+  } catch (error) { if (card.isConnected) card.textContent = error.message; }
 }
 
 function buildDataResultTable(result) {
@@ -1677,22 +1689,6 @@ function buildDataResultTable(result) {
   table.append(body); wrap.append(table); return wrap;
 }
 
-function buildDataResultChart(result) {
-  const hint = result.chartHint || {};
-  const chart = document.createElement("div"); chart.className = "data-result-chart";
-  const y = Array.isArray(hint.y) ? hint.y[0] : hint.y;
-  const points = result.rows.slice(0, 12).map((row) => Number(row[y])).filter(Number.isFinite);
-  if (!y || !points.length || hint.type === "table") { chart.hidden = true; return chart; }
-  const max = Math.max(...points, 1);
-  result.rows.slice(0, points.length).forEach((row) => {
-    const item = document.createElement("div"); item.className = "data-result-bar";
-    const label = document.createElement("span"); label.textContent = String(row[hint.x] ?? "");
-    const bar = document.createElement("i"); bar.style.width = `${Math.max(2, Number(row[y]) / max * 100)}%`;
-    const value = document.createElement("b"); value.textContent = String(row[y]);
-    item.append(label, bar, value); chart.append(item);
-  });
-  return chart;
-}
 
 function appendSystemEvent(text, isError = false, options = {}) {
   const event = document.createElement("div");
@@ -1858,7 +1854,11 @@ function setRunning(running) {
     state.lastTransportActivityAt = Date.now();
     state.lastBusinessActivityAt = Date.now();
   }
+  const wasRunning = state.running;
   state.running = running;
+  if (wasRunning && !running && state.workspace?.id === "data-question" && state.session) {
+    void dataAgentContext.load(state.session.id);
+  }
   elements.stopButton.hidden = !running;
   elements.sendButton.hidden = running;
   updateSessionHeader();

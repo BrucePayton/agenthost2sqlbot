@@ -85,6 +85,7 @@ def build_execution_worker(
         sandbox_timeout_seconds=settings.opensandbox_sandbox_timeout_seconds,
         memory_lease_seconds=max(60, settings.turn_timeout_seconds + 60),
         credential_provider=credential_provider,
+        data_agent_service=services.data_agents,
     )
     return services, worker
 

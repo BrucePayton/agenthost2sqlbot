@@ -172,6 +172,8 @@ async def _request_protected_route(
             },
             headers=headers,
         )
+    if method == "PUT" and path.endswith("/data-agent"):
+        return await client.request(method, path, json={"agent_id": "agent", "reset": True}, headers=headers)
     if method == "PATCH":
         return await client.request(
             method, path, json={"title": "Foreign rename"}, headers=headers
@@ -185,6 +187,8 @@ FOREIGN_RESOURCE_ROUTES = [
     ("DELETE", "/api/sessions/foreign"),
     ("GET", "/api/sessions/foreign/messages"),
     ("GET", "/api/sessions/foreign/context"),
+    ("GET", "/api/sessions/foreign/data-agent"),
+    ("PUT", "/api/sessions/foreign/data-agent"),
     ("GET", "/api/sessions/foreign/skills"),
     ("GET", "/api/sessions/foreign/files"),
     ("GET", "/api/sessions/foreign/attachments"),

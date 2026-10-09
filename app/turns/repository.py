@@ -49,7 +49,9 @@ class TurnRepository:
             )
             if existing is not None:
                 return existing
-            owner_session = await session.get(SessionRecord, session_id)
+            owner_session = await session.scalar(
+                select(SessionRecord).where(SessionRecord.id == session_id).with_for_update()
+            )
             if owner_session is None:
                 raise AppError("session_not_found", "Session not found.", 404)
             if self.database.engine.dialect.name == "sqlite":

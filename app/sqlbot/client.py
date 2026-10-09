@@ -158,7 +158,7 @@ class SQLBotClient:
         try:
             async with self.client.stream(
                 "POST", "/api/v1/chat/question", headers=headers,
-                json={"question": question, "chat_id": chat_id},
+                json={"question": question, "chat_id": chat_id, "generate_chart": True},
             ) as response:
                 response.raise_for_status()
                 async for line in response.aiter_lines():
@@ -171,11 +171,13 @@ class SQLBotClient:
                     if not isinstance(event, dict):
                         continue
                     event = self.public_details(event, (ticket, assistant_token))
+                    if event.get("type") == "error":
+                        raise _question_error(event.get("content"), events)
                     events.append(event)
                     if on_event is not None:
                         await on_event(event)
-                    if event.get("type") == "error":
-                        raise AppError("sqlbot_question_failed", _bounded_message(event.get("content")), 502)
+        except httpx.TimeoutException as exc:
+            raise AppError("sqlbot_transport_timeout", "等待 SQLBot 响应超时；后台查询可能仍在执行。", 504) from exc
         except httpx.HTTPError as exc:
             raise AppError("sqlbot_unavailable", "SQLBot question request failed.", 502) from exc
         record_id = next((event.get("id") for event in events if event.get("type") == "id"), None)
@@ -187,17 +189,26 @@ class SQLBotClient:
             if event.get("type") == "sql":
                 sql = str(event.get("content") or "")
             if event.get("type") == "chart":
-                try:
-                    chart_hint = json.loads(event.get("content") or "{}")
-                except (TypeError, json.JSONDecodeError):
-                    chart_hint = {}
-        chat = await self._assistant_request("GET", f"/api/v1/chat/{chat_id}", assistant_token, ticket)
-        records = chat.get("records", []) if isinstance(chat, dict) else []
-        record = next((r for r in records if str(r.get("id")) == str(record_id)), None)
+                chart_hint = _chart_config(event.get("content"))
+            if event.get("type") == "chart-type" and not chart_hint:
+                value = event.get("content")
+                chart_hint = {"type": value if isinstance(value, str) else None}
+        # These stream receipts confirm saved SQL data and chart completion. Fetching the whole
+        # chat here rebuilds the dynamic datasource and consumes another callback;
+        # multi-turn questions already use both callbacks while loading history.
+        executed = any(e.get("type") == "sql-data" and e.get("content") == "execute-success" for e in events)
+        finished = any(e.get("type") == "finish" for e in events)
+        if executed and finished and sql:
+            record = {"id": record_id, "sql": sql, "finish": True, "chart": json.dumps(chart_hint, ensure_ascii=False) if chart_hint else None}
+        else:
+            chat = await self._assistant_request("GET", f"/api/v1/chat/{chat_id}", assistant_token, ticket)
+            records = chat.get("records", []) if isinstance(chat, dict) else []
+            record = next((r for r in records if str(r.get("id")) == str(record_id)), None)
         if record and record.get("error"):
-            raise AppError("sqlbot_question_failed", _bounded_message(record["error"]), 502)
+            raise _question_error(self.public_details(record["error"], (ticket, assistant_token)), events)
         if record:
             sql = record.get("sql") or sql
+            chart_hint = _chart_config(record.get("chart")) or chart_hint
             if not record.get("finish"):
                 raise AppError("sqlbot_question_incomplete", "SQLBot record is not finished.", 502)
         presentation = await self.record_presentation(
@@ -261,10 +272,12 @@ class SQLBotClient:
                     if not isinstance(event, dict):
                         continue
                     event = self.public_details(event, (ticket, assistant_token))
+                    if event.get("type") == "error":
+                        raise _question_error(event.get("content"), events, record_id=record_id, stage=action)
                     await on_event(event)
                     events.append(event)
-                    if event.get("type") == "error":
-                        raise AppError("sqlbot_question_failed", _bounded_message(event.get("content")), 502)
+        except httpx.TimeoutException as exc:
+            raise AppError("sqlbot_transport_timeout", "等待 SQLBot 后续分析响应超时。", 504) from exc
         except httpx.HTTPError as exc:
             raise AppError("sqlbot_unavailable", "SQLBot follow-up request failed.", 502) from exc
         child = next((e.get("id") for e in events if e.get("type") == "id"), record_id)
@@ -365,3 +378,46 @@ def _unwrap(value: Any) -> Any:
 def _bounded_message(value: object) -> str:
     text = " ".join(str(value or "SQLBot request failed.").split())
     return text[:500]
+
+
+def _question_error(value: object, events: list[dict], *, record_id=None, stage=None) -> AppError:
+    """Classify upstream failures, without matching or rewriting user questions."""
+    payload = value
+    if isinstance(payload, str):
+        try:
+            payload = json.loads(payload)
+        except (ValueError, TypeError):
+            pass
+    message = payload.get("message", payload) if isinstance(payload, dict) else payload
+    raw = str(message or "SQLBot request failed.")
+    lower = raw.lower()
+    if stage is None:
+        stage = "sql_generation"
+        for event in events:
+            if event.get("type") == "sql":
+                stage = "sql_execution"
+            elif event.get("type") == "sql-data" and event.get("content") == "execute-success":
+                stage = "chart_generation"
+    record_id = next((e.get("id") for e in events if e.get("type") == "id"), record_id)
+    details = {"record_id": record_id, "stage": stage, "upstream_message": _bounded_message(raw)}
+    if "insufficient_quota" in lower or "arrearage" in lower:
+        code, message = "sqlbot_model_quota_exceeded", "模型服务额度不足，当前步骤未完成。"
+    elif "2013" in lower and ("timed out" in lower or "timeout" in lower):
+        code, message = "sqlbot_database_timeout", "SQL 已生成，但等待数据库查询结果超时。"
+    elif stage == "sql_execution":
+        code, message = "sqlbot_sql_execution_failed", "SQL 执行失败，请查看数据库错误详情。"
+    elif stage == "chart_generation":
+        code, message = "sqlbot_chart_failed", "查询已完成，后续图表步骤失败。"
+    else:
+        code, message = "sqlbot_question_failed", _bounded_message(raw)
+    return AppError(code, message, 502, details=details)
+
+
+def _chart_config(value: Any) -> dict[str, Any]:
+    """Preserve SQLBot's declarative chart contract, never execute model code."""
+    if isinstance(value, str):
+        try:
+            value = json.loads(value)
+        except (ValueError, TypeError):
+            return {}
+    return value if isinstance(value, dict) else {}

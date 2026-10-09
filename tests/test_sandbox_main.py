@@ -7,7 +7,7 @@ import pytest
 def _capture_worker(monkeypatch):
     import app.sandbox.main as main_module
 
-    services = SimpleNamespace(database=object(), turns=object())
+    services = SimpleNamespace(database=object(), turns=object(), data_agents=object())
 
     monkeypatch.setattr(main_module, "build_app_services", lambda _settings: services)
     monkeypatch.setattr(
@@ -37,6 +37,7 @@ def test_build_worker_injects_platform_provider_for_claude(
     )
 
     _services, worker = build_execution_worker(settings)
+    assert worker.data_agent_service is _services.data_agents
 
     assert isinstance(worker.credential_provider, PlatformModelCredentialProvider)
     assert "top-secret-test-key" not in repr(worker.credential_provider)
@@ -56,6 +57,7 @@ def test_build_worker_omits_provider_for_fake(settings_factory, monkeypatch) -> 
     )
 
     _services, worker = build_execution_worker(settings)
+    assert worker.data_agent_service is _services.data_agents
 
     assert worker.credential_provider is None
 

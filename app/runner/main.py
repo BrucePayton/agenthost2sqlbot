@@ -25,6 +25,9 @@ def _read_request(path: Path) -> RunnerRequest:
 def _runtime_for(request: RunnerRequest):
     if request.runtime_kind == "fake":
         return FakeAgentRuntime()
+    if request.workspace_id == "data-question":
+        from app.runner.data_agent import DataAgentRelayRuntime
+        return DataAgentRelayRuntime(Settings())
     return ClaudeAgentRuntime(Settings())
 
 

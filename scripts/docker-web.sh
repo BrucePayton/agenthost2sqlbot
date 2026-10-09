@@ -66,6 +66,9 @@ build_compose_args() {
     --env-file "$RUNTIME_DIR/compose.env"
     -f "$COMPOSE_FILE"
   )
+  if [[ -f "$RUNTIME_DIR/data-agent.compose.json" ]]; then
+    COMPOSE_ARGS+=(-f "$RUNTIME_DIR/data-agent.compose.json")
+  fi
   if [[ "${DOCKER_WEB_GATE:-0}" == "1" ]]; then
     COMPOSE_ARGS+=(-f "$GATE_COMPOSE_FILE")
   fi
@@ -198,11 +201,19 @@ command_up() {
   require_docker
   local app_tag="${PROJECT}-app:phase2a2"
   local runner_tag="${PROJECT}-runner:phase2a2"
+  # Keep a tag for images still referenced by existing sandboxes. Docker Desktop
+  # can otherwise lose the old manifest when the rolling tag is replaced.
+  local previous_runner_image
+  previous_runner_image=$(docker image inspect --format '{{.Id}}' "$runner_tag" 2>/dev/null || true)
+  if [[ -n "$previous_runner_image" ]]; then
+    docker tag "$previous_runner_image" "${PROJECT}-runner:retain-${previous_runner_image#sha256:}"
+  fi
   docker build -f "$ROOT/deploy/docker/Dockerfile.web" -t "$app_tag" "$ROOT"
   docker build -f "$ROOT/deploy/docker/Dockerfile.opensandbox-runner" -t "$runner_tag" "$ROOT"
   local app_image runner_image
   app_image=$(docker image inspect --format '{{.Id}}' "$app_tag")
   runner_image=$(docker image inspect --format '{{.Id}}' "$runner_tag")
+  docker tag "$runner_image" "${PROJECT}-runner:retain-${runner_image#sha256:}"
   render_config "$mode" "$app_image" "$runner_image"
 
   build_compose_args

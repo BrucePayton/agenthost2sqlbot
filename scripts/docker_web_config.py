@@ -207,6 +207,27 @@ def render_runtime_config(
     app_image = _validate_image_id("application image", app_image)
     runner_image = _validate_image_id("Runner image", runner_image)
     source = _read_source(source_path)
+    # Keep the operator file authoritative across restarts/re-renders. Only
+    # recognized integration settings can cross into the API/Worker environment.
+    from app.config import Settings
+
+    integration_names = {
+        field.validation_alias for field in Settings.model_fields.values()
+        if isinstance(field.validation_alias, str)
+        and field.validation_alias.startswith(("DATA_AGENT_", "SQLBOT_", "STARROCKS_"))
+    }
+    integration = {key: value for key, value in source.items() if key in integration_names}
+    manifest = integration.get("DATA_AGENT_STARROCKS_MANIFEST")
+    mounts = []
+    if manifest:
+        manifest_path = Path(manifest).expanduser()
+        if not manifest_path.is_absolute() and source_path is not None:
+            manifest_path = source_path.parent / manifest_path
+        if not manifest_path.is_file():
+            raise ValueError("DATA_AGENT_STARROCKS_MANIFEST must be an existing file on the host")
+        integration["DATA_AGENT_STARROCKS_MANIFEST"] = "/app/starrocks-manifest.json"
+        mounts = [{"type": "bind", "source": str(manifest_path.resolve()),
+                   "target": "/app/starrocks-manifest.json", "read_only": True}]
     target = _prepare_runtime_dir(runtime_dir)
     rendered = RenderedConfig(
         runtime_dir=target,
@@ -298,7 +319,9 @@ def render_runtime_config(
                 "MOCK_USER_SUBJECT": "mock-user",
                 "MOCK_USER_DISPLAY_NAME": "Mock User",
                 "MOCK_PERSONAL_WORKSPACE_ID": "example",
-                "MOCK_WORKSPACE_ROLES": '{"example":"owner"}',
+                "MOCK_WORKSPACE_ROLES": '{"example":"owner","data-question":"owner"}'
+                if integration.get("DATA_AGENT_ENABLED", "").lower() in {"true", "1"}
+                else '{"example":"owner"}',
                 "APP_RUNTIME_MODE": "opensandbox_docker",
                 "APP_RUNTIME_COHORT": "docker-web",
                 "APP_RUNTIME_IMAGE_DIGEST": runner_image,
@@ -314,6 +337,7 @@ def render_runtime_config(
                 "OPENSANDBOX_WORKER_CONCURRENCY": concurrency,
                 "WORKER_HEARTBEAT_INTERVAL_SECONDS": heartbeat_interval,
                 "WORKER_HEARTBEAT_STALE_SECONDS": heartbeat_stale,
+                **integration,
             }
         ),
     )
@@ -325,6 +349,11 @@ def render_runtime_config(
     if model_key is not None:
         worker_values["ANTHROPIC_API_KEY"] = model_key
     _atomic_write(rendered.worker_env, _env_text(worker_values))
+    _atomic_write(
+        target / "data-agent.compose.json",
+        json.dumps({"services": {name: {"volumes": mounts}
+                                 for name in ("api", "worker", "migrate")}}) + "\n",
+    )
     _atomic_write(
         rendered.opensandbox_env,
         _env_text({"OPENSANDBOX_SERVER_API_KEY": opensandbox_key}),

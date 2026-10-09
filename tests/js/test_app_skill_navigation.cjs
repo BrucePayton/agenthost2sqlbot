@@ -196,6 +196,7 @@ function installBrowserHarness() {
         transport === "ready" ? execution : transport
       ),
     },
+    createDataAgentContext: require("../../app/web/static/data-agent-context.js").createDataAgentContext,
     SessionInspector: {createToolTimelineState: () => new Map()},
     fetch: async (path) => {
       calls.push(path);

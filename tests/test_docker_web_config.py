@@ -149,3 +149,44 @@ def test_existing_marker_cannot_be_claimed_by_another_project(tmp_path: Path) ->
 
     with pytest.raises(ValueError, match="belongs to another project"):
         render(tmp_path, project_name="another-project")
+
+
+def test_data_agent_configuration_survives_render_and_mounts_all_consumers(tmp_path: Path) -> None:
+    manifest = tmp_path / 'manifest.json'
+    manifest.write_text('{"datasources": []}')
+    source = tmp_path / 'operator.env'
+    source.write_text(
+        'DATA_AGENT_ENABLED=true\n'
+        'DATA_AGENT_STARROCKS_MANIFEST=manifest.json\n'
+        'SQLBOT_BASE_URL=http://host.docker.internal:8000\n'
+        'SQLBOT_SECRET_KEY=synthetic-sqlbot-secret\n'
+        'STARROCKS_PASSWORD=synthetic-db-password\n'
+        'SQLBOT_UNKNOWN_SETTING=ignored\n'
+    )
+    rendered = render(tmp_path / 'runtime', source_path=source)
+    api = dotenv_values(rendered.api_env)
+    assert api['DATA_AGENT_ENABLED'] == 'true'
+    assert api['SQLBOT_BASE_URL'] == 'http://host.docker.internal:8000'
+    assert api['SQLBOT_SECRET_KEY'] == 'synthetic-sqlbot-secret'
+    assert api['STARROCKS_PASSWORD'] == 'synthetic-db-password'
+    assert 'SQLBOT_UNKNOWN_SETTING' not in api
+    assert json.loads(api['MOCK_WORKSPACE_ROLES'])['data-question'] == 'owner'
+    override = json.loads((rendered.runtime_dir / 'data-agent.compose.json').read_text())
+    for name in ('api', 'worker', 'migrate'):
+        assert override['services'][name]['volumes'] == [{
+            'type': 'bind', 'source': str(manifest),
+            'target': api['DATA_AGENT_STARROCKS_MANIFEST'], 'read_only': True,
+        }]
+    # Removing integration from the authoritative source clears generated state.
+    render(tmp_path / 'runtime')
+    assert 'SQLBOT_SECRET_KEY' not in dotenv_values(rendered.api_env)
+    assert all(not service['volumes'] for service in json.loads(
+        (rendered.runtime_dir / 'data-agent.compose.json').read_text())['services'].values())
+
+
+def test_missing_data_agent_manifest_fails_before_runtime_changes(tmp_path: Path) -> None:
+    source = tmp_path / 'operator.env'
+    source.write_text('DATA_AGENT_STARROCKS_MANIFEST=missing.json\n')
+    with pytest.raises(ValueError, match='DATA_AGENT_STARROCKS_MANIFEST'):
+        render(tmp_path / 'runtime', source_path=source)
+    assert not (tmp_path / 'runtime').exists()

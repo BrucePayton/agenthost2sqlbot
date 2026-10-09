@@ -94,6 +94,7 @@ class DataAskInput(BaseModel):
 
     agent_id: str | None = Field(default=None, alias="agentId")
     question: str = Field(min_length=1, max_length=4000)
+    context_mode: Literal["new", "continue"] = Field(default="continue", alias="contextMode")
     session_key: str | None = Field(default=None, alias="sessionKey")
 
 
@@ -134,3 +135,10 @@ class DataAgentHealth(BaseModel):
     asset_mapping_configured: bool
     callback_source_restricted: bool
     callback_url: str
+
+
+class DataAgentContextUpdate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    agent_id: str | None = None
+    backend: Literal["sqlbot", "mcp"] | None = None
+    reset: bool = False

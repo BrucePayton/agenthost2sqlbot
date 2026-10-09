@@ -19,4 +19,4 @@
 curl 'http://127.0.0.1:8765/api/sqlbot/catalog/dw/tables/dw_centre_inspection_report_info/schema'
 ```
 
-部署配置位于 `.runtime/starrocks-poc/catalog-api.env`（权限 `0600`），数据源 ID 映射为 DW=4、DM=5、RPT=6；完整元数据清单位于 `.runtime/starrocks-poc/manifest.json`。目录接口单独启用，动态问数功能保持关闭，直到服务2能访问宿主的 Ticket 回调地址。
+历史部署曾使用 `.runtime/starrocks-poc/catalog-api.env`，仅启用目录接口并关闭动态问数；该旧配置已退役，不再用于启动。当前 8765 Docker 入口统一读取 `.env.docker.local`：服务2只供元数据，本地 SQLBot 执行问数并回调 8765。数据源 ID 映射仍为 DW=4、DM=5、RPT=6；完整元数据清单位于 `.runtime/starrocks-poc/manifest.json`。

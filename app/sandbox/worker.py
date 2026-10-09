@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import logging
 import uuid
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 from app.db.base import Database
-from app.db.models import SessionRecord
+from app.db.models import SessionRecord, UserRecord
 from app.runner.protocol import (
     RunnerAttachment,
     RunnerFrame,
@@ -50,7 +51,9 @@ class OpenSandboxExecutionWorker:
         memory_lease_seconds: int,
         runner_runtime: str = "claude",
         credential_provider: ModelCredentialProvider | None = None,
+        data_agent_service=None,
     ) -> None:
+        self.data_agent_service = data_agent_service
         self.database = database
         self.turns = turns
         self.repository = repository
@@ -472,6 +475,8 @@ class OpenSandboxExecutionWorker:
                 for item in runtime_request.context_items
             ),
             subscription_task=dict(runtime_request.metadata.get("subscription_task") or {}),
+            data_backend=runtime_request.metadata.get("data_backend", "sqlbot"),
+            data_mcp_tools=runtime_request.metadata.get("data_mcp_tools", []),
         )
 
     async def _session_owner(self, session_id: str) -> SessionRecord:
@@ -579,6 +584,42 @@ class OpenSandboxExecutionWorker:
                     extra={"session_id": session_id},
                 )
 
+    async def _answer_data_request(self, turn_id: str, sandbox_id: str, payload: dict, *, table_request: bool = False) -> None:
+        from app.data_mcp.schemas import DataAskInput
+        from app.errors import AppError
+        request_id = payload.get("request_id", "")
+        if uuid.UUID(request_id).hex != request_id:
+            raise ValueError("Invalid data request id")
+        try:
+            turn = await self.turns.get(turn_id)
+            owner = await self._session_owner(turn.session_id)
+            if owner.workspace_id != "data-question" or self.data_agent_service is None:
+                raise AppError("data_agent_unavailable", "Data Agent is unavailable in this workspace.", 403)
+            if table_request:
+                body = await self.data_agent_service.call_table_tool(
+                    host_session_key=owner.id, name=payload.get("name", ""),
+                    arguments=payload.get("arguments", {}))
+                await self.sandbox.write_data_response(sandbox_id, request_id, json.dumps(body, ensure_ascii=False).encode())
+                return
+            if getattr(owner, "data_backend", "sqlbot") != "sqlbot":
+                raise AppError("data_backend_mismatch", "MCP mode cannot call SQLBot.", 403)
+            question = DataAskInput.model_validate({key: value for key, value in payload.items() if key != "request_id"})
+            async with self.database.session() as db:
+                user = await db.get(UserRecord, owner.created_by)
+                if user is None:
+                    raise AppError("data_agent_identity_missing", "Session owner is unavailable.", 403)
+                subject = user.external_subject
+            result = await self.data_agent_service.ask(
+                user_subject=subject, host_session_key=owner.id, question=question.question,
+                context_mode=question.context_mode)
+            body = result.model_dump(mode="json", by_alias=True, exclude={"presentation"})
+        except AppError as exc:
+            body = {"error": {"code": exc.code, "message": exc.message}}
+        except Exception:  # noqa: BLE001 - redact Host errors before crossing the sandbox boundary.
+            body = {"error": {"code": "data_ask_failed", "message": "The governed data question failed."}}
+        await self.sandbox.write_data_response(sandbox_id, request_id,
+            json.dumps(body, ensure_ascii=False).encode())
+
     async def _consume_frames(
         self,
         turn_id: str,
@@ -602,49 +643,64 @@ class OpenSandboxExecutionWorker:
                 self.sandbox_timeout_seconds / 3,
             ),
         )
-        while True:
-            if loop.time() - last_renewed >= renew_interval:
-                now = datetime.now(UTC)
-                await self.repository.renew_memory_lease(
-                    scope_key=memory_scope_key,
-                    lease_token=lease_token,
-                    now=now,
-                    ttl=timedelta(seconds=self.memory_lease_seconds),
-                )
-                await self.sandbox.renew_sandbox(
-                    sandbox_id, self.sandbox_timeout_seconds
-                )
-                last_renewed = loop.time()
-            current = await self.turns.get(turn_id)
-            if current.cancel_requested_at is not None:
-                await self.sandbox.cancel_command(command)
-                observation = await self.sandbox.inspect_command(command)
-                if observation.status.value in {
-                    "cancelled",
-                    "failed",
-                    "succeeded",
-                }:
-                    return {"status": "cancelled"}, usage
-                await asyncio.sleep(0.25)
-                continue
-            batch = await self.sandbox.read_frames(command, cursor)
-            for line in batch.lines:
-                frame = RunnerFrame.model_validate_json(line)
-                validator.accept(frame)
-                payload = dict(frame.payload)
-                event_type = str(payload.pop("event_type", frame.kind))
-                if frame.kind == "terminal":
-                    result = payload
+        data_tasks: set[asyncio.Task] = set()
+        try:
+            while True:
+                for task in tuple(data_tasks):
+                    if task.done():
+                        task.result()
+                        data_tasks.remove(task)
+                if loop.time() - last_renewed >= renew_interval:
+                    now = datetime.now(UTC)
+                    await self.repository.renew_memory_lease(
+                        scope_key=memory_scope_key,
+                        lease_token=lease_token,
+                        now=now,
+                        ttl=timedelta(seconds=self.memory_lease_seconds),
+                    )
+                    await self.sandbox.renew_sandbox(
+                        sandbox_id, self.sandbox_timeout_seconds
+                    )
+                    last_renewed = loop.time()
+                current = await self.turns.get(turn_id)
+                if current.cancel_requested_at is not None:
+                    await self.sandbox.cancel_command(command)
+                    observation = await self.sandbox.inspect_command(command)
+                    if observation.status.value in {
+                        "cancelled",
+                        "failed",
+                        "succeeded",
+                    }:
+                        return {"status": "cancelled"}, usage
+                    await asyncio.sleep(0.25)
                     continue
-                event = RuntimeEvent(event_type, payload, frame.role)
-                if frame.kind == "usage":
-                    usage = payload
-                await self.turns.append_runtime_event(turn_id, event)
-            cursor = batch.next_cursor
-            if batch.complete:
-                break
-            if not batch.lines:
-                await asyncio.sleep(0.25)
+                batch = await self.sandbox.read_frames(command, cursor)
+                for line in batch.lines:
+                    frame = RunnerFrame.model_validate_json(line)
+                    validator.accept(frame)
+                    payload = dict(frame.payload)
+                    event_type = str(payload.pop("event_type", frame.kind))
+                    if event_type in {"data.ask.request", "data.table.request"}:
+                        if data_tasks:
+                            raise ValueError("Only one data request may be pending per turn")
+                        data_tasks.add(asyncio.create_task(self._answer_data_request(turn_id, sandbox_id, payload, table_request=event_type == "data.table.request")))
+                        continue
+                    if frame.kind == "terminal":
+                        result = payload
+                        continue
+                    event = RuntimeEvent(event_type, payload, frame.role)
+                    if frame.kind == "usage":
+                        usage = payload
+                    await self.turns.append_runtime_event(turn_id, event)
+                cursor = batch.next_cursor
+                if batch.complete:
+                    break
+                if not batch.lines:
+                    await asyncio.sleep(0.25)
+        finally:
+            for task in data_tasks:
+                task.cancel()
+            await asyncio.gather(*data_tasks, return_exceptions=True)
         if result is None or result.get("status") != "completed":
             raise RuntimeError("Runner ended without a completed terminal frame")
         return result, usage

@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>数据 Agent 管理</title>
     <link rel="stylesheet" href="/static/data-agents.css?v={{ asset_revision }}">
-  </head>
+  <link rel="stylesheet" href="/static/sqlbot-charts.css">
+</head>
   <body>
     <header class="topbar">
       <div><span class="eyebrow">Agent Host × SQLBot</span><h1>数据 Agent 管理</h1></div>
@@ -35,8 +36,8 @@
       </section>
       <div id="notice" class="notice" role="status" hidden></div>
     </main>
-    <script src="/static/vendor/g2.min.js" defer></script>
-    <script src="/static/data-agent-chat.js?v={{ asset_revision }}" defer></script>
+    <script src="/static/sqlbot-charts.js"></script>
+<script src="/static/data-agent-chat.js?v={{ asset_revision }}" defer></script>
     <script src="/static/data-agents.js?v={{ asset_revision }}" defer></script>
   </body>
 </html>

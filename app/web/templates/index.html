@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="color-scheme" content="light">
     <title>{{ app_name }}</title>
+    <link rel="stylesheet" href="/static/sqlbot-charts.css?v={{ asset_revision }}">
     <link rel="stylesheet" href="/static/app.css?v={{ asset_revision }}">
   </head>
   <body data-max-files-per-turn="{{ max_files_per_turn }}">
@@ -75,6 +76,19 @@
             </div>
           </header>
 
+          <section id="dataAgentContext" class="data-agent-context" hidden>
+            <label for="dataBackendSelect">取数方式</label>
+            <select id="dataBackendSelect" aria-label="取数方式">
+              <option value="sqlbot">SQLBot（远程服务 2）</option>
+              <option value="mcp">MCP 工具</option>
+            </select>
+            <label id="dataAgentSelectLabel" for="dataAgentSelect">Data Agent</label>
+            <select id="dataAgentSelect" aria-label="选择问数助手"></select>
+            <span id="dataAgentContextStatus" role="status"></span>
+            <button id="resetDataAgentContext" class="button secondary" type="button">重置问数上下文</button>
+            <a id="dataAgentManageLink" href="/data-agents">管理助手</a>
+            <small id="dataBackendHelp">切换取数方式会重建模型上下文；历史消息保留。</small>
+          </section>
           <section id="messageTimeline" class="message-timeline" role="log" aria-live="polite" aria-relevant="additions text">
             <div id="conversationEmpty" class="conversation-empty">
               <div class="empty-mark" aria-hidden="true">W</div>
@@ -300,6 +314,9 @@
     <script src="/static/service-health.js" defer></script>
     <script src="/static/session-inspector.js" defer></script>
     {% if debug_identity_enabled %}<script src="/static/debug-identity.js" defer></script>{% endif %}
+    <script src="/static/data-agent-context.js?v={{ asset_revision }}" defer></script>
+    <script src="/static/sqlbot-charts.js?v={{ asset_revision }}" defer></script>
+    <script src="/static/chat-markdown.js?v={{ asset_revision }}" defer></script>
     <script src="/static/app.js?v={{ asset_revision }}" defer></script>
   </body>
 </html>

@@ -164,7 +164,7 @@ class TurnService:
                 if self.execution_availability is not None:
                     await self.execution_availability.require_available()
 
-                session = await db.get(SessionRecord, session_id)
+                session = await db.get(SessionRecord, session_id, with_for_update=True)
                 if session is None:
                     raise AppError("session_not_found", "Session not found.", 404)
                 normalized_references = (
@@ -469,6 +469,10 @@ class TurnService:
             )
             runtime_metadata = dict(input_payload.get("runtime_metadata", {}))
             runtime_metadata.pop("subscription_task", None)
+            # Backend/tool schemas are server-owned, never accepted from request metadata.
+            runtime_metadata["data_backend"] = session.data_backend
+            runtime_metadata["data_mcp_tools"] = json.loads(session.data_mcp_tools_json)
+
             if checkpoint is not None:
                 runtime_metadata["subscription_task"] = json.loads(checkpoint.payload_json)
         session_path = self.sessions.session_path(session)

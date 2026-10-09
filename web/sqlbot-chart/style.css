@@ -1,0 +1,8 @@
+.sqlbot-result-chart { min-width:0; margin:12px 0; padding:12px; border-radius:12px; background:#fff; color:#1f2329; }
+.sqlbot-chart-controls { display:flex; flex-wrap:wrap; align-items:center; gap:16px; margin:12px 0; font-size:13px; }
+.sqlbot-chart-controls select { padding:5px 9px; }
+.sqlbot-chart-controls label { display:flex; align-items:center; gap:4px; }
+.sqlbot-chart-viewport { width:100%; height:360px; min-width:0; position:relative; }
+.sqlbot-chart-canvas { width:100%; height:100%; }
+.sqlbot-chart-notice { font-size:12px; color:#855b16; }
+.sqlbot-chart-attribution { font-size:11px; color:#646a73; }

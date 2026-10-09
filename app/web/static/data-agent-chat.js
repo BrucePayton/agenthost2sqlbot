@@ -25,24 +25,7 @@
       if (!doneEvent) throw new Error("连接已中断，当前回答可能不完整。请重新提问。");
     } finally { reader.releaseLock(); }
   }
-  function chartSpec(cfg, columns, rows) {
-    const axis=Array.isArray(cfg.axis)?cfg.axis:[], map=cfg.axis&&!Array.isArray(cfg.axis)?cfg.axis:{};
-    const key=v=>typeof v==="string"?v:v?.value;
-    const x=key(cfg.x||map.x)||key(axis.find(a=>a.type==="x"))||columns[0];
-    const yRaw=cfg.y||map.y||axis.filter(a=>a.type==="y");
-    let ys=(Array.isArray(yRaw)?yRaw:[yRaw]).map(key).filter(Boolean);
-    if (!ys.length) ys=columns.filter(n=>n!==x && rows.some(r=>r[n]!=null && r[n]!=="" && Number.isFinite(Number(r[n])))).slice(0,1);
-    if(!ys.length)return null;
-    const series=key(cfg.series||map.series), kind=cfg.type||"column";
-    let data=rows.map(r=>({...r,[ys[0]]:Number(r[ys[0]])})), y=ys[0], color=series;
-    if(ys.length>1){data=rows.flatMap(r=>ys.map(n=>({...r,__metric:series?`${r[series]} · ${n}`:n,__value:Number(r[n])})));y="__value";color="__metric";}
-    const options={type:kind==="line"?"line":"interval",data,encode:{x,y,...(color?{color}:{})},axis:{x:{title:map.x?.name||x},y:{title:ys.length>1?"数值":(map.y?.name||y)}}};
-    if(kind==="bar")options.coordinate={transform:[{type:"transpose"}]};
-    if(color && kind!=="line")options.transform=[{type:"dodgeX"}];
-    if(kind==="pie"){options.coordinate={type:"theta",outerRadius:.85};options.transform=[{type:"stackY"}];options.encode={y,color:x};options.legend={color:{position:"bottom"}};}
-    return options;
-  }
-  if (typeof module !== "undefined") module.exports = {consume, parse, chartSpec};
+  if (typeof module !== "undefined") module.exports = {consume, parse};
   if (!root.document) return;
   const $ = id => document.getElementById(id);
   const el = (tag, value, cls) => { const n = document.createElement(tag); if (value != null) n.textContent = String(value); if (cls) n.className = cls; return n; };
@@ -75,17 +58,6 @@
     }
     parent.append(box);
   }
-  async function chart(parent, result) {
-    const cfg=parse(result.presentation?.record?.chart)||result.chartHint||{};
-    const rows=result.rows||[]; if (!rows.length) {parent.append(el("p","没有可展示的数据。","empty"));return;}
-    const numeric=result.columns.filter(c=>rows.some(r=>r[c]!=null && r[c]!=="" && Number.isFinite(Number(r[c]))));
-    if (rows.length===1 && numeric.length===1 && result.columns.length===1) { const kpi=el("div",null,"metric"); kpi.append(el("span",numeric[0]),el("strong",Number(rows[0][numeric[0]]).toLocaleString("zh-CN"))); parent.append(kpi);return; }
-    const options=chartSpec(cfg,result.columns,rows);
-    if (!root.G2 || !options || cfg.type==="table") { parent.append(el("p","当前结果以数据表展示。","trace-muted")); return; }
-    const holder=el("div",null,"chart-canvas");parent.append(holder);
-    const c=new root.G2.Chart({container:holder,autoFit:true,height:320});
-    try {c.options(options);await c.render();} catch (_) {holder.replaceChildren(el("p","图表暂时无法绘制，请查看完整数据表。"));}
-  }
   function makeTurn(question, label="问数") {
     const card=el("article",null,"question-turn");card.append(el("div",label,"eyebrow"),el("h3",question,"asked-question"));
     const status=el("p","准备中…","stream-status");status.setAttribute("role","status");
@@ -102,11 +74,12 @@
       else if(e.type==="datasource") stages.append(el("p",`已选择数据源：${e.datasource_name||e.id}${e.engine_type?` · ${e.engine_type}`:""}`,"source-choice"));
       else if(e.type==="brief") stages.append(detail("问题理解与查询说明",e.brief,true));
       else if(e.type==="sql") {section("sql","生成的 SQL").querySelector("pre").textContent=e.content;status.textContent="正在执行 SQL…";}
-      else if(e.type==="sql-data") {stages.append(el("p","SQL 执行成功","source-choice"));status.textContent="正在生成图表…";}
+      else if(e.type==="sql-data") {stages.append(el("p","SQL 执行成功","source-choice"));status.textContent="正在整理查询结果…";}
+      else if(e.type==="chart-type") stages.append(el("p",`图表类型：${e.content||"未提供"}`,"source-choice"));
       else if(e.type==="retry") {stages.append(el("p",e.content,"trace-warning"));parts.clear();}
       else if(e.type==="recommended_question") { const questions=parse(e.content); if(Array.isArray(questions)){ for(const q of questions) output.append(button(String(q),()=>{$("question").value=String(q);$("question").focus();})); } }
       else if(e.type==="predict-failed") {output.append(el("p","SQLBot 未生成可用的预测数据，请查看模型说明。","trace-warning"));}
-      else if(e.type==="error") {if(failure)return;failure=true;status.textContent="问数失败";card.classList.add("failed");output.append(el("p",text(parse(e.content)),"trace-error"));}
+      else if(e.type==="error") {if(failure)return;failure=true;status.textContent=({sqlbot_database_timeout:"数据库查询超时",sqlbot_model_quota_exceeded:"模型额度不足",sqlbot_transport_timeout:"SQLBot 响应超时",sqlbot_sql_execution_failed:"SQL 执行失败",sqlbot_chart_failed:"图表步骤失败"})[e.code]||"问数失败";card.classList.add("failed");output.append(el("p",text(parse(e.content)),"trace-error"));if(e.details)output.append(detail("错误详情",e.details));}
     }
     function finish(stopped=false) {clearInterval(timer);status.dataset.elapsed=`${((Date.now()-started)/1000).toFixed(1)} 秒`;if(!failure)status.textContent=stopped?"已停止接收；SQLBot 后台可能仍在执行。":"已完成";for(const [key,d] of parts) d.open=key==="analysis-result"||key==="predict-result";}
     return {card,event,finish,output,status,section};
@@ -128,10 +101,11 @@
     const out=turn.output;out.append(el("p",`返回 ${result.rowCount} 行 · Record ${result.recordId}${result.truncated?" · 当前展示数据已截断":""}`,"result-meta"));
     const record=result.presentation?.record||{};
     for(const [key,title] of [["sql_answer","SQL 生成说明"],["chart_answer","图表生成说明"],["analysis","数据分析"],["predict","数据预测"]]) if(record[key]) out.append(detail(title,record[key]));
-    const visual=el("section",null,"result-chart");visual.append(el("h4","可视化结果"));out.append(visual);chart(visual,result);
-    out.append(detail("查看 / 复制 SQL",result.sql),table(result.columns,result.rows));
+    const chart=el("div",null,"sqlbot-result-chart");out.append(chart);
+    if(root.SQLBotCharts) void root.SQLBotCharts.mount(chart,result).catch(e=>{chart.textContent=e.message;out.append(table(result.columns,result.rows));});
+    out.append(detail("查看 / 复制 SQL",result.sql));
     const tools=el("div",null,"result-actions");tools.append(button("复制 SQL",async()=>{try{await navigator.clipboard.writeText(result.sql);}catch(_){notify("复制失败，请展开 SQL 手动复制。");}}),button("导出当前数据 CSV",()=>download(result)));
-    for(const [kind,label] of [["analysis","数据分析"],["predict","数据预测"],["recommend","推荐问题"]]) tools.append(button(label,async(e)=>{
+    for(const [kind,label] of [["analysis","数据分析"],...(record.chart?[["predict","数据预测"]]:[]),["recommend","推荐问题"]]) tools.append(button(label,async(e)=>{
       const b=e.currentTarget;b.disabled=true;const follow=makeTurn(label,label);out.append(follow.card);
       await run(`/api/data-agents/${agent.id}/results/${result.resultId}/actions/${kind}`,{},follow,r=>{
         execution(follow.output,r);

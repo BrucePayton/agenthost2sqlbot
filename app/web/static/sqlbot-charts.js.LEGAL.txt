@@ -1,0 +1,105 @@
+Bundled license information:
+
+html2canvas/dist/html2canvas.js:
+  /*!
+   * html2canvas 1.4.1 <https://html2canvas.hertzen.com>
+   * Copyright (c) 2022 Niklas von Hertzen <https://hertzen.com>
+   * Released under MIT License
+   */
+  /*! *****************************************************************************
+      Copyright (c) Microsoft Corporation.
+  
+      Permission to use, copy, modify, and/or distribute this software for any
+      purpose with or without fee is hereby granted.
+  
+      THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+      REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+      AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+      INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+      LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+      OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+      PERFORMANCE OF THIS SOFTWARE.
+      ***************************************************************************** */
+
+lodash/lodash.js:
+  /**
+   * @license
+   * Lodash <https://lodash.com/>
+   * Copyright OpenJS Foundation and other contributors <https://openjsf.org/>
+   * Released under MIT license <https://lodash.com/license>
+   * Based on Underscore.js 1.8.3 <http://underscorejs.org/LICENSE>
+   * Copyright Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+   */
+
+@antv/g-math/dist/index.esm.js:
+  /*!
+   * @antv/g-math
+   * @description Geometry util
+   * @version 3.1.0
+   * @date 12/22/2025, 3:02:36 AM
+   * @author AntVis
+   * @docs https://g.antv.antgroup.com/
+   */
+
+@babel/runtime/helpers/esm/regenerator.js:
+  /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/babel/babel/blob/main/packages/babel-helpers/LICENSE */
+
+@antv/g-lite/dist/index.esm.js:
+  /*!
+   * @antv/g-lite
+   * @description A core module for rendering engine implements DOM API.
+   * @version 2.7.0
+   * @date 12/24/2025, 11:55:20 AM
+   * @author AntVis
+   * @docs https://g.antv.antgroup.com/
+   */
+
+@antv/g/dist/index.esm.js:
+  /*!
+   * @antv/g
+   * @description A core module for rendering engine implements DOM API.
+   * @version 6.3.1
+   * @date 12/24/2025, 11:55:39 AM
+   * @author AntVis
+   * @docs https://g.antv.antgroup.com/
+   */
+
+@antv/g-canvas/dist/index.esm.js:
+  /*!
+   * @antv/g-canvas
+   * @description A renderer implemented by Canvas 2D API
+   * @version 2.2.0
+   * @date 12/24/2025, 11:55:53 AM
+   * @author AntVis
+   * @docs https://g.antv.antgroup.com/
+   */
+
+@antv/g-plugin-dragndrop/dist/index.esm.js:
+  /*!
+   * @antv/g-plugin-dragndrop
+   * @description A G plugin for Drag n Drop implemented with PointerEvents
+   * @version 2.1.1
+   * @date 12/24/2025, 11:56:44 AM
+   * @author AntVis
+   * @docs https://g.antv.antgroup.com/
+   */
+
+lodash-es/lodash.js:
+  /**
+   * @license
+   * Lodash (Custom Build) <https://lodash.com/>
+   * Build: `lodash modularize exports="es" --repo lodash/lodash#4.18.1 -o ./`
+   * Copyright OpenJS Foundation and other contributors <https://openjsf.org/>
+   * Released under MIT license <https://lodash.com/license>
+   * Based on Underscore.js 1.8.3 <http://underscorejs.org/LICENSE>
+   * Copyright Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+   */
+
+decimal.js/decimal.mjs:
+  /*!
+   *  decimal.js v10.6.0
+   *  An arbitrary-precision Decimal type for JavaScript.
+   *  https://github.com/MikeMcl/decimal.js
+   *  Copyright (c) 2025 Michael Mclaughlin <M8ch88l@gmail.com>
+   *  MIT Licence
+   */

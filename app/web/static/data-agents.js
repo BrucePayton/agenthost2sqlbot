@@ -38,7 +38,13 @@ async function loadHealth() {
 }
 
 async function loadDatasets() {
-  authorizedDatasets = await api("/api/data-agents/datasets");
+  try {
+    authorizedDatasets = await api("/api/data-agents/datasets");
+  } catch (error) {
+    authorizedDatasets = [];
+    $("datasets").textContent = `数据集加载失败：${error.message}。请修复配置后点击刷新。`;
+    throw error;
+  }
   if (!authorizedDatasets.length) {
     const empty = document.createElement("p");
     empty.className = "empty";
@@ -103,8 +109,7 @@ async function loadAgents() {
     if (agent.status === "published") actions.append(
       action("开启问数", async () => {
         const opened = await api(`/api/data-agents/${agent.id}/open`, {method:"POST"});
-        if (dataAgentProvider === "starrocks_poc") openQuestionPanel(agent, opened);
-        else window.location.href = opened.workbench_url;
+        window.location.href = opened.workbench_url;
       }, "", `${agent.name}：开启问数`),
       action("停用", async () => { await api(`/api/data-agents/${agent.id}/disable`, {method:"POST"}); await loadAgents(); }, "secondary"),
     );
@@ -130,8 +135,19 @@ $("createForm").addEventListener("submit", async (event) => {
     notify("数据 Agent 草稿已创建"); await loadAgents();
   } catch (error) { notify(error.message); }
 });
-$("refresh").addEventListener("click", () => loadAgents().catch((error) => notify(error.message)));
-Promise.all([loadHealth(), loadDatasets(), loadAgents()]).catch((error) => notify(error.message));
+async function refreshAll() {
+  $("refresh").disabled = true;
+  try {
+    const results = await Promise.allSettled([loadHealth(), loadDatasets(), loadAgents()]);
+    const errors = [...new Set(results.filter((item) => item.status === "rejected")
+      .map((item) => item.reason.message))];
+    if (errors.length) notify(errors.join("；"));
+  } finally {
+    $("refresh").disabled = false;
+  }
+}
+$("refresh").addEventListener("click", refreshAll);
+refreshAll();
 
 
 function openQuestionPanel(agent, opened) {

@@ -1,0 +1,6 @@
+services:
+  sqlbot:
+    image: sqlbot-confirm:agenthost-query-data-20261009
+    environment:
+      SQLBOT_DYNAMIC_DB_CONNECT_TIMEOUT: "10"
+      SQLBOT_DYNAMIC_DB_READ_TIMEOUT: "30"

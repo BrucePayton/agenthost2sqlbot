@@ -1,0 +1,72 @@
+[
+  {
+    "case_id": "T001",
+    "group": "dw",
+    "question": "昨天质检多少台？",
+    "agent_id": "73b9408d-c82d-499b-b151-8c3189b1c76c",
+    "table": "dw.dw_centre_inspection_report_info"
+  },
+  {
+    "case_id": "T010",
+    "group": "dw",
+    "question": "最近一周各品牌检出来的等级分布怎么样？",
+    "agent_id": "73b9408d-c82d-499b-b151-8c3189b1c76c",
+    "table": "dw.dw_centre_inspection_report_info"
+  },
+  {
+    "case_id": "T018",
+    "group": "dw",
+    "question": "最近一周复检时，哪些质检项的结果和之前不一样？各有多少台？",
+    "agent_id": "73b9408d-c82d-499b-b151-8c3189b1c76c",
+    "table": "dw.dw_centre_inspection_report_item_info"
+  },
+  {
+    "case_id": "T019",
+    "group": "dw",
+    "question": "这周X-RAY检出异常的多吗？正常和异常的量按质检项拆开看看。",
+    "agent_id": "73b9408d-c82d-499b-b151-8c3189b1c76c",
+    "table": "dw.dw_centre_inspection_report_item_info"
+  },
+  {
+    "case_id": "T020",
+    "group": "dw",
+    "question": "最近一个月魔镜检出异常最多的是哪十个质检项？",
+    "agent_id": "73b9408d-c82d-499b-b151-8c3189b1c76c",
+    "table": "dw.dw_centre_inspection_report_item_info"
+  },
+  {
+    "case_id": "T057",
+    "group": "dm",
+    "question": "拍拍最近一周售后申请比前一周多了多少？",
+    "agent_id": "38b2e448-c074-47c2-b1b9-f9d4cd3c63dc",
+    "table": "dm.dm_centre_return_document_product_pp"
+  },
+  {
+    "case_id": "T097",
+    "group": "dm",
+    "question": "这周IPQC和FQC哪个拦截得多？分别多少？",
+    "agent_id": "38b2e448-c074-47c2-b1b9-f9d4cd3c63dc",
+    "table": "dm.dm_centre_operation_insp_quality_metric_dataset"
+  },
+  {
+    "case_id": "T168",
+    "group": "dm",
+    "question": "这周看图抽检哪些项目跟原来的结论不一样，各有多少单？",
+    "agent_id": "38b2e448-c074-47c2-b1b9-f9d4cd3c63dc",
+    "table": "dm.dm_centre_operation_insp_level_photo_ipqc_fqc_task_detail"
+  },
+  {
+    "case_id": "T193",
+    "group": "rpt",
+    "question": "这周各运中收货量从高到低列一下。",
+    "agent_id": "5499f2ba-32a4-44b6-b31b-b53a04c96b6b",
+    "table": "rpt.rpt_centre_receive_document_product"
+  },
+  {
+    "case_id": "T196",
+    "group": "rpt",
+    "question": "最近一周各运中的收货渠道分布怎么样？",
+    "agent_id": "5499f2ba-32a4-44b6-b31b-b53a04c96b6b",
+    "table": "rpt.rpt_centre_receive_document_product"
+  }
+]

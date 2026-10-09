@@ -89,6 +89,8 @@ class RunnerRequest(BaseModel):
     page_state: dict[str, Any] = Field(default_factory=dict)
     tool_results: tuple[RunnerToolResult, ...] = ()
     context_items: tuple[RunnerContextItem, ...] = ()
+    data_backend: Literal["sqlbot", "mcp"] = Field(default="sqlbot", exclude_if=lambda value: value == "sqlbot")
+    data_mcp_tools: list[dict[str, Any]] = Field(default_factory=list, exclude_if=lambda value: not value)
     # Server-owned checkpoints include real SDK receipts and program state.
     subscription_task: dict[str, Any] = Field(default_factory=dict, exclude_if=lambda value: not value)
 
@@ -160,7 +162,8 @@ class RunnerRequest(BaseModel):
                 for item in self.context_items
             ),
             run_id=self.turn_id,
-            metadata={"subscription_task": dict(self.subscription_task)} if self.subscription_task else {},
+            metadata={"subscription_task": dict(self.subscription_task), "data_backend": self.data_backend,
+                      "data_mcp_tools": self.data_mcp_tools},
         )
 
 

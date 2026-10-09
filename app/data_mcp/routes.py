@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, Header, Request, Response, status
 from app.api.dependencies import AppServices, Identity, get_services
 from app.data_mcp.schemas import (
     AuthorizedDataset,
+    DataAgentContextUpdate,
     DataAgentCreate,
     DataAgentHealth,
     DataAgentOpenOut,
@@ -151,7 +152,9 @@ def _event_response(run):
     import contextlib
     import json
     import logging
+
     from fastapi.responses import StreamingResponse
+
     from app.errors import AppError
 
     async def stream():
@@ -166,7 +169,8 @@ def _event_response(run):
                 value = result.model_dump(by_alias=True, mode="json") if hasattr(result, "model_dump") else result
                 await emit({"type": "result", "result": value})
             except AppError as exc:
-                await emit({"type": "error", "code": exc.code, "content": exc.message})
+                await emit({"type": "error", "code": exc.code, "content": exc.message,
+                            **({"details": exc.details} if exc.details else {})})
             except Exception:
                 logging.getLogger(__name__).exception("Data Agent stream failed")
                 await emit({"type": "error", "code": "data_agent_stream_failed", "content": "问数失败，请稍后重试。"})
@@ -177,7 +181,7 @@ def _event_response(run):
             while True:
                 try:
                     event = await asyncio.wait_for(queue.get(), timeout=15)
-                except asyncio.TimeoutError:
+                except TimeoutError:
                     yield ": heartbeat\n\n"
                     continue
                 yield "data: " + json.dumps(event, ensure_ascii=False, default=str) + "\n\n"
@@ -210,7 +214,54 @@ async def data_agent_result_action(
     from app.errors import AppError
     if action not in {"analysis", "predict", "recommend"}:
         raise AppError("invalid_data_action", "Unsupported action", 400)
-    await services.data_agents.get_result(agent_id=agent_id, result_id=result_id, identity=identity)
+    await services.data_agents.get_result(agent_id=agent_id, result_id=result_id, identity=identity, require_fresh=True)
     return _event_response(lambda emit: services.data_agents.followup(
         agent_id=agent_id, result_id=result_id, action=action, identity=identity, on_event=emit,
     ))
+
+
+@router.get("/sessions/{session_id}/data-agent")
+async def session_data_agent(session_id: str, services: Services, identity: Identity) -> dict:
+    from app.errors import AppError
+    session = await services.workspace_access.require_session_owner(identity, session_id)
+    if session.workspace_id != "data-question":
+        raise AppError("invalid_workspace", "Data Agent requires the data-question workspace.", 400)
+    # Reading the selection must not require SQLBot or Service-2 configuration.
+    result = {"backend": session.data_backend, "agent_id": None, "chat_id": None,
+              "mcp_available": False, "mcp_unavailable_reason": None}
+    try:
+        services.data_agents.table_mcp.require_subject(identity.external_subject)
+        result["mcp_available"] = True
+    except AppError as exc:
+        result["mcp_unavailable_reason"] = exc.message
+    try:
+        binding = await services.data_agents.repository.get_ask_session(session_id, identity.external_subject)
+    except AppError as exc:
+        if exc.code != "data_agent_session_not_found":
+            raise
+    else:
+        result.update(agent_id=binding.agent_id, chat_id=binding.sqlbot_chat_id)
+    return result
+
+
+@router.put("/sessions/{session_id}/data-agent")
+async def update_session_data_agent(session_id: str, payload: DataAgentContextUpdate,
+                                    services: Services, identity: Identity) -> dict:
+    current = await session_data_agent(session_id, services, identity)
+    service = services.data_agents
+    target = payload.backend or current["backend"]
+    async with services.sessions.locks.acquire(session_id), service.context_locks.acquire(session_id):
+        from app.errors import AppError
+        if (await services.sessions.get(session_id)).status == "running":
+            raise AppError("data_context_busy", "请等待当前回答完成后再切换取数方式。", 409)
+        tools = None
+        if target == "mcp":
+            tools = await service.table_mcp.list_tools(identity.external_subject)
+        elif payload.agent_id:
+            agent = await service.get_agent(payload.agent_id, identity)
+            if agent.status != "published":
+                raise AppError("data_agent_not_published", "Publish the data agent first.", 409)
+        await service.repository.configure_context(
+            host_session_key=session_id, user_subject=identity.external_subject,
+            agent_id=payload.agent_id, reset=payload.reset, backend=target, mcp_tools=tools)
+    return await session_data_agent(session_id, services, identity)

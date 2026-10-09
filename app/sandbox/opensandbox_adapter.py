@@ -277,6 +277,14 @@ class OpenSandboxAdapter:
             raise self._translate_error(exc, "write_request") from exc
         return path
 
+    async def write_data_response(self, sandbox_id: str, request_id: str, payload: bytes) -> None:
+        import uuid
+        if uuid.UUID(request_id).hex != request_id:
+            raise ValueError("Invalid data request id")
+        sandbox = await self._connect(sandbox_id)
+        await sandbox.files.write_file(
+            f"/session/control/data-response-{request_id}.json", payload, mode=600)
+
     async def sync_workspace(self, handle: SandboxHandle, source_dir: Path) -> None:
         root = source_dir.resolve(strict=True)
         if not root.is_dir() or source_dir.is_symlink():

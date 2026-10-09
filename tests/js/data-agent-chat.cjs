@@ -12,11 +12,6 @@ test('truncated stream is never reported as success',async()=>{
 test('HTTP authorization error is exposed before parsing events',async()=>{
  await assert.rejects(consume(new Response(JSON.stringify({error:{message:'无权访问'}}),{status:403}),()=>{}),/无权访问/);
 });
-const {chartSpec}=require('../../app/web/static/data-agent-chat.js');
-test('SQLBot object axes and multiple measures are rendered without silently dropping a measure',()=>{
- const s=chartSpec({type:'column',axis:{x:{name:'日期',value:'day'},y:[{value:'a'},{value:'b'}]}},['day','a','b'],[{day:'2026-09-29',a:10,b:20}]);
- assert.equal(s.encode.x,'day');assert.equal(s.data.length,2);assert.deepEqual(s.data.map(r=>r.__value),[10,20]);assert.equal(s.encode.color,'__metric');
-});
 // Component unit test uses an in-memory DOM, never a real browser or UI automation.
 test('question view renders SQLBot trace, metrics and table without replacing prior turns',async()=>{
  const vm=require('node:vm'),fs=require('node:fs');
@@ -32,12 +27,13 @@ test('question view renders SQLBot trace, metrics and table without replacing pr
  const doc={getElementById:k=>ids.get(k),createElement:tag=>new Element(tag)};
  const result={resultId:'r',recordId:1,columns:['次数'],rows:[{'次数':5}],rowCount:1,sql:'SELECT COUNT(*)',chartHint:{type:'table'},evidence:{datasetRefs:['rpt']},fieldsUsed:['次数'],presentation:{execution:{duration:1,total_tokens:42,steps:[{operate:'EXECUTE_SQL',duration:1,message:{count:1}}]}}};
  const events=[{type:'sql-result',content:'生成说明'},{type:'sql',content:result.sql},{type:'result',result},{type:'done'}];
- const context={window:{document:doc},document:doc,TextDecoder,AbortController,Response,ReadableStream,Blob,URL,setTimeout,clearTimeout,setInterval,clearInterval,console,fetch:async()=>new Response(events.map(e=>'data: '+JSON.stringify(e)+'\n\n').join(''))};
+ const mounts=[];
+ const context={window:{document:doc,SQLBotCharts:{mount:async(node,result)=>{mounts.push(result);node.textContent="SQLBot 原生图表";}}},document:doc,TextDecoder,AbortController,Response,ReadableStream,Blob,URL,setTimeout,clearTimeout,setInterval,clearInterval,console,fetch:async()=>new Response(events.map(e=>'data: '+JSON.stringify(e)+'\n\n').join(''))};
  vm.runInNewContext(fs.readFileSync(require.resolve('../../app/web/static/data-agent-chat.js'),'utf8'),context);
  context.window.DataAgentChat.open({id:'a',name:'RPT助手'},{session_id:'s'});
  await ids.get('questionForm').onsubmit({preventDefault(){}});
  await ids.get('questionForm').onsubmit({preventDefault(){}});
  const walk=n=>[n.textContent,...n.children.flatMap(walk)];
  const rendered=walk(ids.get('questionResult')).join('\n');
- assert.equal(ids.get('questionResult').children.length,2);assert.match(rendered,/执行明细 · 1 秒 · 42 Tokens/);assert.match(rendered,/生成的 SQL/);assert.match(rendered,/数据分析/);assert.match(rendered,/完成 · 执行 SQL/);assert.equal(ids.get('askButton').disabled,false);
+ assert.equal(ids.get('questionResult').children.length,2);assert.match(rendered,/执行明细 · 1 秒 · 42 Tokens/);assert.match(rendered,/生成的 SQL/);assert.match(rendered,/数据分析/);assert.match(rendered,/SQLBot 原生图表/);assert.equal(mounts.length,2);assert.equal(mounts[0].chartHint.type,"table");assert.match(rendered,/完成 · 执行 SQL/);assert.equal(ids.get('askButton').disabled,false);
 });

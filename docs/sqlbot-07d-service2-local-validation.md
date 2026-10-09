@@ -1,5 +1,31 @@
 # 07D：服务2供源、本机 SQLBot 执行联调
 
+## 2026-10-09：10 题回归及仅返回图表类型
+
+当前 Data Agent 只返回数据和 SQL 生成阶段给出的图表类型，不再调用图表生成模型或加载 G2 绘图。
+本地 SQLBot 查询连接已分离连接/读取超时为 10/30 秒，避免沿用连接检查的 10 秒读取阈值。
+服务2仍为 `10.193.65.41:8002`，未切换为 18000。完整验证及额度阻塞事项见
+[10 题回归记录](sqlbot-regression-10-20261009.md)。下文图表绘制说明为历史行为。
+
+## 2026-10-09：8765 Docker 入口恢复与配置归并
+
+当前 Docker 入口为 `http://127.0.0.1:8765/data-agents`，配置唯一来源为
+`.env.docker.local`。启动器生成 API/Worker 环境和清单挂载，不再加载旧的
+`catalog-api.env`、`catalog-compose.env`、`catalog-override.yaml`、`api.env`、
+`docker.env`、`local-docker.env`（以上均指 `.runtime/starrocks-poc/` 下的旧文件）。
+旧文件已移出启动路径，只在 `.runtime/docker-web/retired-config-backup/` 保留回滚归档。
+根目录 `.env` 和 18765 的 `service2-local-sqlbot.env` 属于其他已有入口，继续保留。
+
+原本地 SQLite 有四个 Agent，而 Docker PostgreSQL 只有 RPT 与三源联合两个。
+已从 SQLite 恢复缺失的 DW、DM 定义及绑定，保留其 Host ID 和已有 SQLBot
+高级小助手 ID；已有两条 Docker 记录不被覆盖。四条记录均重新同步至本地
+SQLBot，其回调统一指向 `http://host.docker.internal:8765/api/sqlbot/datasources`。
+恢复前数据库快照和恢复证据位于 `.runtime/docker-web/restore-four-agents/`。
+历史会话、结果与 Ticket 未迁移，SQLite 原数据未删除。
+
+已验证三组数据集、3318 个字段、服务2的 23/19/8 张选表以及高级小助手回调可达。
+以下各节是先前联调记录，其中的端口与配置路径不代表当前 Docker 启动配置。
+
 2026-09-30 已打通流程图 07D 的第 9～14 步。隔离宿主运行在 `http://127.0.0.1:18765`，本机 SQLBot 位于 `127.0.0.1:8000`。服务2 `10.193.65.41:8002` 只提供所选表、字段和自定义备注；宿主实时读取并与完整 50 表清单核对，再结合宿主本地的 StarRocks 连接配置，组装 SQLBot 的动态数据源回调。服务2不反向访问本机，也不从其目录接口读取数据库密码。
 
 验收记录：

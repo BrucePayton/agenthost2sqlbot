@@ -1,7 +1,7 @@
 version: 1
 id: data-question
 name: 数巢问数
-description: 通过 Host 内嵌 Data MCP 和 SQLBot 高级小助手执行受治理问数
+description: 可切换公司 MCP 工具或 SQLBot 助手取数，由 Host 管理会话与登录身份
 
 skills: []
 allowed_tools:

@@ -1,0 +1,23 @@
+{
+  "repository": "https://github.com/dataease/SQLBot",
+  "commit": "d1f5e6c2e865d5eb625ebe4f3997d11746902404",
+  "deployedBundleSha256": "9662779c213442084033338fd6d5e5cfd1c22086f4ef8b2fd6e080572d8873c0",
+  "files": {
+    "BaseChart.ts": "918cd50ca65bd5200f58c8c0291f316c904609adda58d5efe5e1e97aca11eec1",
+    "BaseG2Chart.ts": "5b4fc456c46eacdaa4f4bdfba09fef03a3dc52f5fa2ae5797225423e1de48916",
+    "index.ts": "a9cd1e0caf8e1d1d5557343d753894f8d8d31a69eef97668fc8403fa41501929",
+    "ChartComponent.vue": "12486977c1087c490c06b7bc7bb4f0b50f164410a99d38fdf92e2f895fcd3e50",
+    "DisplayChartBlock.vue": "1eec7da9a0d0d0c0ea37ef8d31fc97dd0e783c9f6c4966a058c728bb5fc075d6",
+    "charts/Bar.ts": "5bf6ba7bdc383830dd1fcffdca2a8c344ed3307453bd606c60c17b8ba8b50b58",
+    "charts/Column.ts": "b2a237346620779fd2a760831e4dea778b62dffad9846d9c0237eff6391dc4d4",
+    "charts/Line.ts": "7682a62c4d971b0dad75f831b93a79082d012e660304faf23aea87e8abc6b060",
+    "charts/Pie.ts": "e9c5b01b0809bfee5d9d892125ce9c519cbf1ec88ef4078a91888c27c4525955",
+    "charts/Table.ts": "c4a329b8d4328a03e64b8ec1ec784fbf0e6c3ef0ef2a629c97caba0e331c1ff7",
+    "charts/utils.ts": "f068ed0983770c1055de3e78719136a1ded011c8f809249bcceaee51b9ed19ba"
+  },
+  "dependencies": {
+    "@antv/g2": "5.4.8",
+    "@antv/s2": "2.7.2",
+    "lodash-es": "4.18.1"
+  }
+}

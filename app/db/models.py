@@ -207,6 +207,8 @@ class SessionRecord(Base):
     title: Mapped[str] = mapped_column(String(120), nullable=False)
     title_source: Mapped[str] = mapped_column(String(16), nullable=False)
     status: Mapped[str] = mapped_column(String(16), nullable=False, index=True)
+    data_backend: Mapped[str] = mapped_column(String(16), nullable=False, default="sqlbot", server_default="sqlbot")
+    data_mcp_tools_json: Mapped[str] = mapped_column(Text, nullable=False, default="[]", server_default="[]")
     workspace_snapshot_json: Mapped[str] = mapped_column(Text, nullable=False)
     workspace_snapshot_hash: Mapped[str] = mapped_column(String(64), nullable=False)
     session_dir: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
